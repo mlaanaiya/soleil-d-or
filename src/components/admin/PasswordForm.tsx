@@ -1,14 +1,13 @@
 'use client'
 
-import { useActionState } from 'react'
 import { updatePassword } from '@/app/admin/_actions/account'
-import { initialState, type ActionState } from '@/lib/action-state'
 import { Toast } from './Toast'
+import { useAdminForm } from './useAdminForm'
 
 export function PasswordForm() {
-  const [state, action, pending] = useActionState<ActionState, FormData>(updatePassword, initialState)
+  const [state, onSubmit, pending] = useAdminForm(updatePassword)
   return (
-    <form action={action} className="adm-card adm-form" key={state.ok ? state.at : 'form'}>
+    <form onSubmit={onSubmit} className="adm-card adm-form" key={state.ok ? state.at : 'form'}>
       <h2>Changer le mot de passe</h2>
       <p className="adm-card-sub">10 caractères minimum. Une phrase de passe facile à retenir est idéale.</p>
       <label className="adm-field">

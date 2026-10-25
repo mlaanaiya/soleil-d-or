@@ -72,6 +72,8 @@
 }
 
 html {
+  /* Decorative layers and 3D cards must never create horizontal page scroll. */
+  overflow-x: clip;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   background: var(--charbon);

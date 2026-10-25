@@ -1,10 +1,11 @@
 'use client'
 
-import { useActionState, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { moveCategory, removeCategory, saveCategory } from '@/app/admin/_actions/catalog'
-import { initialState, type ActionState } from '@/lib/action-state'
+import type { ActionState } from '@/lib/action-state'
 import { MediaPicker, type LibraryItem } from './MediaPicker'
 import { Toast } from './Toast'
+import { useAdminForm } from './useAdminForm'
 
 export type AdminCategory = {
   id: number | null
@@ -18,14 +19,14 @@ export type AdminCategory = {
 }
 
 export function CategoryEditor({ category, photos, first, last }: { category: AdminCategory; photos: LibraryItem[]; first?: boolean; last?: boolean }) {
-  const [state, action, pending] = useActionState<ActionState, FormData>(saveCategory, initialState)
+  const [state, onSubmit, pending] = useAdminForm(saveCategory)
   const [other, setOther] = useState<ActionState | null>(null)
   const [busy, start] = useTransition()
   const run = (fn: () => Promise<ActionState>) => start(async () => setOther(await fn()))
 
   return (
     <section className="adm-card">
-      <form action={action} className="adm-form" key={category.id ? undefined : state.at}>
+      <form onSubmit={onSubmit} className="adm-form" key={category.id ? undefined : state.at}>
         {category.id && <input type="hidden" name="id" value={category.id} />}
         <div className="adm-row" style={{ justifyContent: 'space-between' }}>
           <h2>{category.id ? category.name : 'Nouvelle catégorie'}</h2>

@@ -1,10 +1,10 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useState } from 'react'
 import { saveHours } from '@/app/admin/_actions/settings'
-import { initialState, type ActionState } from '@/lib/action-state'
 import { DAYS, DAY_LABELS, type Day, type Hours, type Slot } from '@/lib/schemas'
 import { Toast } from './Toast'
+import { useAdminForm } from './useAdminForm'
 
 function SlotList({ slots, onChange }: { slots: Slot[]; onChange: (s: Slot[]) => void }) {
   return (
@@ -32,12 +32,12 @@ function SlotList({ slots, onChange }: { slots: Slot[]; onChange: (s: Slot[]) =>
 
 export function HoursEditor({ initial }: { initial: Hours }) {
   const [hours, setHours] = useState<Hours>(initial)
-  const [state, action, pending] = useActionState<ActionState, FormData>(saveHours, initialState)
+  const [state, onSubmit, pending] = useAdminForm(saveHours)
   const setDay = (d: Day, slots: Slot[]) => setHours((h) => ({ ...h, week: { ...h.week, [d]: slots } }))
   const copyMonday = () => setHours((h) => ({ ...h, week: Object.fromEntries(DAYS.map((d) => [d, h.week.mon])) as Hours['week'] }))
 
   return (
-    <form action={action} className="adm-form">
+    <form onSubmit={onSubmit} className="adm-form">
       <input type="hidden" name="payload" value={JSON.stringify(hours)} />
       <section className="adm-card">
         <div className="adm-row" style={{ justifyContent: 'space-between' }}>

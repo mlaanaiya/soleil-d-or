@@ -39,6 +39,8 @@ export function FeaturedRail({ title, intro, products }: { title: string; intro:
   }, [])
 
   return (
+    // Stable React-owned wrapper: GSAP inserts its pin-spacer inside it, never in <main>.
+    <div>
     <section ref={root} className={styles.rail} aria-labelledby="featured-title">
       <div className={styles.track}>
         <header className={styles.head}>
@@ -65,5 +67,6 @@ export function FeaturedRail({ title, intro, products }: { title: string; intro:
         </ul>
       </div>
     </section>
+    </div>
   )
 }

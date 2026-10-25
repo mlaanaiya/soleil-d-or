@@ -44,7 +44,6 @@ export default async function OpenGraphImage() {
         <div style={{ position: 'absolute', left: 0, right: 0, top: 470, height: 2, background: 'rgba(255,194,26,0.7)' }} />
         <div style={{ position: 'absolute', left: 0, right: 0, top: 472, bottom: 0, background: '#0f0d0a' }} />
         {product && (
-          // eslint-disable-next-line @next/next/no-img-element -- Satori renders plain <img>
           <img src={product} width={470} style={{ position: "absolute", left: 685, top: 175, width: 470 }} alt="" />
         )}
         <div style={{ position: 'absolute', left: 72, top: 70, display: 'flex', alignItems: 'center', gap: 14, fontFamily: 'Archivo', fontSize: 22, letterSpacing: 6, color: '#b8ae9c' }}>

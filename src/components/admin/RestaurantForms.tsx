@@ -1,13 +1,13 @@
 'use client'
 
-import { useActionState, useRef, useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { geocode, saveRestaurant, saveServices } from '@/app/admin/_actions/settings'
-import { initialState, type ActionState } from '@/lib/action-state'
 import type { Restaurant, Services } from '@/lib/schemas'
 import { Toast } from './Toast'
+import { useAdminForm } from './useAdminForm'
 
 export function RestaurantForm({ initial }: { initial: Restaurant }) {
-  const [state, action, pending] = useActionState<ActionState, FormData>(saveRestaurant, initialState)
+  const [state, onSubmit, pending] = useAdminForm(saveRestaurant)
   const form = useRef<HTMLFormElement>(null)
   const [lat, setLat] = useState(initial.lat?.toString() ?? '')
   const [lng, setLng] = useState(initial.lng?.toString() ?? '')
@@ -28,7 +28,7 @@ export function RestaurantForm({ initial }: { initial: Restaurant }) {
   }
 
   return (
-    <form ref={form} action={action} className="adm-card adm-form">
+    <form ref={form} onSubmit={onSubmit} className="adm-card adm-form">
       <div>
         <h2>Coordonnées</h2>
         <p className="adm-card-sub">Affichées dans le pied de page, la page Contact et transmises à Google (données structurées).</p>
@@ -102,13 +102,13 @@ export function RestaurantForm({ initial }: { initial: Restaurant }) {
 }
 
 export function ServicesForm({ initial }: { initial: Services }) {
-  const [state, action, pending] = useActionState<ActionState, FormData>(saveServices, initialState)
+  const [state, onSubmit, pending] = useAdminForm(saveServices)
   const [links, setLinks] = useState(() => initial.externalLinks.map((l, i) => ({ ...l, id: i })))
   const [ordering, setOrdering] = useState(initial.ordering.enabled)
   const [resa, setResa] = useState(initial.reservations.enabled)
 
   return (
-    <form action={action} className="adm-card adm-form" id="services">
+    <form onSubmit={onSubmit} className="adm-card adm-form" id="services">
       <div>
         <h2>Services</h2>
         <p className="adm-card-sub">N’activez que ce qui est réellement proposé : le site n’affiche jamais un service désactivé.</p>

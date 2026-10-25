@@ -47,6 +47,8 @@ export function Spotlight({ title, text, products }: { title: string; text: stri
   if (shots.length === 0) return null
 
   return (
+    // Stable React-owned wrapper: GSAP inserts its pin-spacer inside it, never in <main>.
+    <div>
     <section ref={root} className={styles.spotlight} aria-labelledby="spotlight-title">
       <div className={styles.frames}>
         {shots.map((p, i) => (
@@ -78,5 +80,6 @@ export function Spotlight({ title, text, products }: { title: string; text: stri
         </ul>
       </div>
     </section>
+    </div>
   )
 }

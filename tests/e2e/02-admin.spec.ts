@@ -1,0 +1,152 @@
+import path from 'node:path'
+import { expect, test } from '@playwright/test'
+import { ADMIN, login, toast } from './helpers'
+
+test.describe.configure({ mode: 'serial' })
+
+test('connexion refusée puis acceptée, déconnexion', async ({ page }) => {
+  await page.goto('/admin/produits')
+  await expect(page).toHaveURL(/\/admin\/connexion\?suite=%2Fadmin%2Fproduits/)
+  await page.getByLabel('Identifiant').fill(ADMIN.username)
+  await page.getByLabel('Mot de passe').fill('mauvais-mot-de-passe')
+  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await expect(page.locator('.adm-error')).toHaveText('Identifiant ou mot de passe incorrect.')
+  await page.getByLabel('Mot de passe').fill(ADMIN.password)
+  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await expect(page).toHaveURL(/\/admin\/produits$/)
+  await page.getByRole('button', { name: 'Se déconnecter' }).click()
+  await expect(page).toHaveURL(/\/admin\/connexion/)
+  await page.goto('/admin')
+  await expect(page).toHaveURL(/\/admin\/connexion/)
+})
+
+test('modifier un prix et une disponibilité depuis la liste', async ({ page }) => {
+  await login(page)
+  await page.goto('/admin/produits')
+  const row = page.locator('.adm-prow', { hasText: 'Double cheeseburger' })
+  await row.getByLabel('Prix 1 de Double cheeseburger en euros').fill('9,50')
+  await row.getByRole('button', { name: 'Enregistrer le prix' }).click()
+  expect(await toast(page)).toBe('Prix enregistrés.')
+
+  const tenders = page.locator('.adm-prow', { hasText: 'Tenders' })
+  await tenders.getByRole('button', { name: 'Disponible' }).click()
+  await expect(tenders.getByRole('button', { name: 'Indisponible' })).toBeVisible()
+
+  await page.goto('/carte/double-cheeseburger')
+  await expect(page.locator('dl').first()).toContainText('9,50')
+  await page.goto('/carte/tenders')
+  await expect(page.getByText('Momentanément indisponible')).toBeVisible()
+})
+
+test('créer un produit avec une photo envoyée', async ({ page }) => {
+  await login(page)
+  await page.goto('/admin/produits/nouveau')
+  await page.getByLabel('Nom du produit').fill('Produit de test')
+  await page.getByLabel('Catégorie').selectOption({ label: 'Boissons' })
+  await page.getByLabel(/^Description/).fill('Créé par les tests automatiques.')
+  await page.getByLabel('Montant du prix 1 en euros').fill('2,50')
+  const chooser = page.waitForEvent('filechooser')
+  await page.getByRole('button', { name: 'Envoyer une image' }).first().click()
+  await (await chooser).setFiles(path.join(process.cwd(), 'assets/photos/frites-dorees-en-barquette-noire.jpg'))
+  await expect(page.locator('.adm-picker-preview img').first()).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('button', { name: 'Créer le produit' }).click()
+  await expect(page).toHaveURL(/\/admin\/produits\/\d+\?cree=1/)
+
+  await page.goto('/carte')
+  const boissons = page.locator('#boissons')
+  await expect(boissons.getByRole('heading', { name: 'Produit de test' })).toBeVisible()
+  await expect(boissons.getByText('2,50')).toBeVisible()
+})
+
+test('horaires et coordonnées alimentent le site', async ({ page }) => {
+  await login(page)
+  await page.goto('/admin/horaires')
+  const monday = page.locator('.adm-day', { hasText: 'Lundi' })
+  await monday.getByRole('button', { name: '+ Ouvrir ce jour' }).click()
+  // A 24h service (00:00 → 00:00) keeps the test independent from the time it runs at.
+  await monday.getByLabel('Ouverture').fill('00:00')
+  await monday.getByLabel('Fermeture').fill('00:00')
+  await page.getByRole('button', { name: 'Copier le lundi sur toute la semaine' }).click()
+  await page.getByRole('button', { name: 'Enregistrer les horaires' }).click()
+  expect(await toast(page)).toBe('Horaires enregistrés.')
+
+  await page.goto('/admin/informations')
+  await page.getByLabel('Adresse (numéro et rue)').fill('1 rue de l’Exemple')
+  await page.getByLabel('Code postal').fill('75001')
+  await page.getByLabel('Ville').fill('Paris')
+  await page.getByLabel(/^Latitude/).fill('48.8606')
+  await page.getByLabel('Longitude').fill('2.3376')
+  await page.getByLabel('Téléphone').fill('01 23 45 67 89')
+  await page.getByRole('button', { name: 'Enregistrer les coordonnées' }).click()
+  expect(await toast(page)).toBe('Informations enregistrées.')
+
+  await page.goto('/contact')
+  await expect(page.getByRole('main').getByText('1 rue de l’Exemple')).toBeVisible()
+  await expect(page.getByRole('contentinfo').getByText('1 rue de l’Exemple')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Itinéraire Google Maps' })).toHaveAttribute('href', /48\.8606/)
+  await expect(page.locator('.status-dot[data-state="open"]').first()).toBeAttached()
+  await page.getByRole('button', { name: 'Afficher la carte interactive' }).click()
+  await expect(page.locator('iframe[title^="Carte"]')).toBeAttached()
+  const ld = JSON.parse((await page.locator('script[type="application/ld+json"]').first().textContent())!)
+  expect(ld.address.addressLocality).toBe('Paris')
+  expect(ld.openingHoursSpecification).toHaveLength(7)
+})
+
+test('commande en ligne : du client au restaurateur', async ({ page, browser }) => {
+  await login(page)
+  await page.goto('/admin/informations')
+  await page.getByLabel('Activer la commande en ligne').check()
+  await page.getByRole('button', { name: 'Enregistrer les services' }).click()
+  expect(await toast(page)).toBe('Services enregistrés.')
+
+  const client = await browser.newPage()
+  await client.goto('/carte/double-cheeseburger')
+  await client.getByRole('button', { name: 'Ajouter à ma commande' }).click()
+  await client.getByRole('link', { name: /Voir ma commande \(1\)/ }).click()
+  await expect(client).toHaveURL(/\/commander$/)
+  await client.getByLabel('Nom').fill('Client Test')
+  await client.getByLabel('Téléphone').fill('06 12 34 56 78')
+  await client.getByRole('button', { name: 'Envoyer la commande' }).click()
+  await expect(client).toHaveURL(/\/commander\/suivi\/[A-Z0-9]{6}\?t=/)
+  await expect(client.getByRole('main')).toContainText('Total à régler au retrait')
+  await expect(client.getByRole('main')).toContainText('9,50')
+  const ref = client.url().match(/suivi\/([A-Z0-9]{6})/)![1]!
+
+  await page.goto('/admin/commandes')
+  const card = page.locator('.adm-order', { hasText: ref })
+  await expect(card).toContainText('Client Test')
+  await card.getByRole('button', { name: 'Accepter' }).click()
+  await expect(card.getByText('En préparation')).toBeVisible()
+
+  await client.reload()
+  await expect(client.locator('[data-state="current"]')).toContainText('En préparation')
+  await client.close()
+})
+
+test('réservation : demande puis confirmation', async ({ page, browser }) => {
+  await login(page)
+  await page.goto('/admin/informations')
+  await page.getByLabel('Activer la réservation en ligne').check()
+  await page.getByRole('button', { name: 'Enregistrer les services' }).click()
+  expect(await toast(page)).toBe('Services enregistrés.')
+
+  const client = await browser.newPage()
+  await client.goto('/reserver')
+  await client.locator('fieldset', { hasText: 'Horaire' }).getByRole('button').first().click()
+  await client.getByLabel('Nom').fill('Convive Test')
+  await client.getByLabel('Téléphone').fill('0612345678')
+  await client.getByRole('button', { name: 'Demander la réservation' }).click()
+  await expect(client).toHaveURL(/\/reserver\/suivi\/[A-Z0-9]{6}\?t=/)
+  await expect(client.getByRole('status')).toContainText('En attente de confirmation')
+
+  await page.goto('/admin/reservations')
+  const row = page.locator('tr', { hasText: 'Convive Test' })
+  await row.getByRole('button', { name: 'Confirmer' }).click()
+  await expect(row.getByText('Confirmée')).toBeVisible()
+  await client.reload()
+  await expect(client.getByRole('status')).toContainText('Confirmée')
+  await client.close()
+
+  await page.goto('/')
+  await expect(page.getByRole('banner').getByRole('link', { name: 'Commander' })).toBeVisible()
+})

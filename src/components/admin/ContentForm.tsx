@@ -1,10 +1,10 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useState } from 'react'
 import { saveContent } from '@/app/admin/_actions/settings'
-import { initialState, type ActionState } from '@/lib/action-state'
 import type { Content } from '@/lib/schemas'
 import { Toast } from './Toast'
+import { useAdminForm } from './useAdminForm'
 
 type Option = { slug: string; name: string; hasCutout: boolean; hasPhoto: boolean }
 
@@ -41,11 +41,11 @@ function ProductSelect({ name, values, options, count, filter }: { name: string;
 }
 
 export function ContentForm({ initial, products }: { initial: Content; products: Option[] }) {
-  const [state, action, pending] = useActionState<ActionState, FormData>(saveContent, initialState)
+  const [state, onSubmit, pending] = useAdminForm(saveContent)
   const [chapters, setChapters] = useState(() => initial.chapters.map((c, i) => ({ ...c, id: i })))
 
   return (
-    <form action={action} className="adm-form">
+    <form onSubmit={onSubmit} className="adm-form">
       <section className="adm-card adm-form">
         <div>
           <h2>Accueil — ouverture</h2>

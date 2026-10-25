@@ -1,11 +1,12 @@
 'use client'
 
-import { useActionState, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { removeProduct, saveProduct } from '@/app/admin/_actions/catalog'
 import { slugify } from '@/lib/format'
-import { initialState, type ActionState } from '@/lib/action-state'
+import type { ActionState } from '@/lib/action-state'
 import { MediaPicker, type LibraryItem } from './MediaPicker'
 import { Toast } from './Toast'
+import { useAdminForm } from './useAdminForm'
 
 export type ProductFormValues = {
   id: number | null
@@ -31,7 +32,7 @@ type Props = {
 }
 
 export function ProductForm({ values, categories, photos, cutouts }: Props) {
-  const [state, action, pending] = useActionState<ActionState, FormData>(saveProduct, initialState)
+  const [state, onSubmit, pending] = useAdminForm(saveProduct)
   const [name, setName] = useState(values.name)
   const [slug, setSlug] = useState(values.slug)
   const [slugTouched, setSlugTouched] = useState(Boolean(values.id))
@@ -40,7 +41,7 @@ export function ProductForm({ values, categories, photos, cutouts }: Props) {
   const [deleteState, setDeleteState] = useState<ActionState | null>(null)
 
   return (
-    <form action={action} className="adm-form">
+    <form onSubmit={onSubmit} className="adm-form">
       {values.id && <input type="hidden" name="id" value={values.id} />}
 
       <section className="adm-card">
