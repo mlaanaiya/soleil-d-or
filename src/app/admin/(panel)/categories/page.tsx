@@ -14,7 +14,9 @@ export default async function CategoriesAdmin() {
       <header className="adm-page-head">
         <div>
           <h1 className="adm-title">Catégories</h1>
-          <p className="adm-sub">L’ordre ci-dessous est celui de la carte. Une catégorie ne peut être supprimée que si elle est vide.</p>
+          <p className="adm-sub">
+            L’ordre ci-dessous est celui de la carte. Une catégorie ne peut être supprimée que si elle est vide.
+          </p>
         </div>
       </header>
       {categories.map((c, i) => (
@@ -37,7 +39,16 @@ export default async function CategoriesAdmin() {
       ))}
       <CategoryEditor
         photos={photos}
-        category={{ id: null, name: '', slug: '', tagline: '', description: '', coverMediaId: null, visible: true, count: 0 }}
+        category={{
+          id: null,
+          name: '',
+          slug: '',
+          tagline: '',
+          description: '',
+          coverMediaId: null,
+          visible: true,
+          count: 0,
+        }}
       />
     </>
   )

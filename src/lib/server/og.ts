@@ -12,9 +12,19 @@ export function ogFonts() {
   if (!fonts) {
     const dir = path.join(assetsDir(), 'fonts')
     fonts = [
-      { name: 'Archivo Condensed', data: fs.readFileSync(path.join(dir, 'Archivo-Condensed-ExtraBold.ttf')), weight: 800, style: 'normal' },
+      {
+        name: 'Archivo Condensed',
+        data: fs.readFileSync(path.join(dir, 'Archivo-Condensed-ExtraBold.ttf')),
+        weight: 800,
+        style: 'normal',
+      },
       { name: 'Archivo', data: fs.readFileSync(path.join(dir, 'Archivo-SemiBold.ttf')), weight: 600, style: 'normal' },
-      { name: 'Instrument Serif', data: fs.readFileSync(path.join(dir, 'InstrumentSerif-Italic.woff')), weight: 400, style: 'italic' },
+      {
+        name: 'Instrument Serif',
+        data: fs.readFileSync(path.join(dir, 'InstrumentSerif-Italic.woff')),
+        weight: 400,
+        style: 'italic',
+      },
     ]
   }
   return fonts
@@ -24,7 +34,10 @@ export function ogFonts() {
 export async function mediaAsPng(media: Media, width: number): Promise<string | null> {
   const w = media.widths.find((x) => x >= width) ?? media.widths.at(-1)
   try {
-    const buffer = await sharp(path.join(mediaDir(), media.id, `${w}.webp`)).resize({ width }).png({ compressionLevel: 8 }).toBuffer()
+    const buffer = await sharp(path.join(mediaDir(), media.id, `${w}.webp`))
+      .resize({ width })
+      .png({ compressionLevel: 8 })
+      .toBuffer()
     return `data:image/png;base64,${buffer.toString('base64')}`
   } catch {
     return null

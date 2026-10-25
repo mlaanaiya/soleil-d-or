@@ -36,7 +36,12 @@ export default async function ReserverPage() {
 
   return (
     <>
-      <PageHero eyebrow="Réservation" title="Réserver" accent="une table" intro="Choisissez une date, un horaire et le nombre de convives. Le restaurant confirme ensuite votre demande." />
+      <PageHero
+        eyebrow="Réservation"
+        title="Réserver"
+        accent="une table"
+        intro="Choisissez une date, un horaire et le nombre de convives. Le restaurant confirme ensuite votre demande."
+      />
       <div className="container">
         <ReservationForm days={days} maxParty={reservations.maxParty} note={reservations.note} />
       </div>

@@ -12,7 +12,13 @@ export function MapFacade({ lat, lng, label }: { lat: number; lng: number; label
   return (
     <div className={styles.map} data-loaded={loaded}>
       {loaded ? (
-        <iframe src={src} title={`Carte : ${label}`} loading="lazy" referrerPolicy="no-referrer" className={styles.mapFrame} />
+        <iframe
+          src={src}
+          title={`Carte : ${label}`}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          className={styles.mapFrame}
+        />
       ) : (
         <button type="button" className={styles.mapFacade} onClick={() => setLoaded(true)}>
           <span className={styles.mapPin} aria-hidden="true" />

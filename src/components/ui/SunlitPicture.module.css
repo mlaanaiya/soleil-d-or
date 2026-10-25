@@ -27,25 +27,15 @@
   --sr: 34%;
 }
 .sunlit[data-auto='true'] {
-  --sr: 42%;
-  animation: wander 14s ease-in-out infinite alternate;
+  --sr: 46%;
+  --sy: 38%;
 }
-@keyframes wander {
-  0% {
-    --sx: 22%;
-    --sy: 30%;
-  }
-  33% {
-    --sx: 70%;
-    --sy: 55%;
-  }
-  66% {
-    --sx: 45%;
-    --sy: 70%;
-  }
-  100% {
-    --sx: 78%;
-    --sy: 28%;
+.sunlit[data-auto='true'] .flare {
+  animation: breathe 5s ease-in-out infinite alternate;
+}
+@keyframes breathe {
+  from {
+    opacity: 0.55;
   }
 }
 
@@ -61,8 +51,18 @@
 .lit {
   position: absolute;
   inset: 0;
-  -webkit-mask-image: radial-gradient(circle at var(--sx) var(--sy), #000 0, #000 calc(var(--sr) * 0.35), transparent var(--sr));
-  mask-image: radial-gradient(circle at var(--sx) var(--sy), #000 0, #000 calc(var(--sr) * 0.35), transparent var(--sr));
+  -webkit-mask-image: radial-gradient(
+    circle at var(--sx) var(--sy),
+    #000 0,
+    #000 calc(var(--sr) * 0.35),
+    transparent var(--sr)
+  );
+  mask-image: radial-gradient(
+    circle at var(--sx) var(--sy),
+    #000 0,
+    #000 calc(var(--sr) * 0.35),
+    transparent var(--sr)
+  );
 }
 .lit img {
   filter: brightness(1.12) saturate(1.12) contrast(1.02);

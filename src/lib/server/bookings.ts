@@ -81,7 +81,13 @@ export function priceCart(lines: OrderInput['items']): { items: OrderItem[]; tot
     if (!product.available) throw new BookingError(`« ${product.name} » est momentanément indisponible.`)
     const price = product.prices[line.priceIndex]
     if (!price) throw new BookingError(`Le prix de « ${product.name} » a changé, mettez à jour votre panier.`)
-    items.push({ productId: product.id, name: product.name, label: price.label, cents: price.cents, quantity: line.quantity })
+    items.push({
+      productId: product.id,
+      name: product.name,
+      label: price.label,
+      cents: price.cents,
+      quantity: line.quantity,
+    })
   }
   return { items, totalCents: items.reduce((sum, i) => sum + i.cents * i.quantity, 0) }
 }
@@ -182,7 +188,13 @@ export function createReservation(input: ReservationInput, at: Date = new Date()
   }
   const ahead = daysBetween(zonedNow(at).date, input.date)
   if (ahead < 0 || ahead > reservations.maxDaysAhead) throw new BookingError('Cette date n’est pas réservable.')
-  const slots = reservationSlots(getSetting('hours'), input.date, at, reservations.leadMinutes, reservations.slotMinutes)
+  const slots = reservationSlots(
+    getSetting('hours'),
+    input.date,
+    at,
+    reservations.leadMinutes,
+    reservations.slotMinutes,
+  )
   if (!slots.some((s) => s.value === input.time)) {
     throw new BookingError('Cet horaire n’est pas disponible, choisissez-en un autre.')
   }
@@ -199,8 +211,7 @@ export function createReservation(input: ReservationInput, at: Date = new Date()
 
 export function getReservationForCustomer(ref: string, token: string): Reservation | null {
   const row = db().prepare('SELECT * FROM reservations WHERE ref = ? AND token = ?').get(ref, token) as
-    | ReservationRow
-    | undefined
+    ReservationRow | undefined
   return row ? toReservation(row) : null
 }
 
@@ -233,8 +244,6 @@ export function purgeBookings(days: number): number {
   const orders = db()
     .prepare("DELETE FROM orders WHERE status IN ('done', 'cancelled') AND created_at < datetime('now', ?)")
     .run(cutoff).changes
-  const reservations = db()
-    .prepare("DELETE FROM reservations WHERE date < date('now', ?)")
-    .run(cutoff).changes
+  const reservations = db().prepare("DELETE FROM reservations WHERE date < date('now', ?)").run(cutoff).changes
   return orders + reservations
 }

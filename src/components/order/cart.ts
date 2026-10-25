@@ -20,7 +20,11 @@ function read(): CartLine[] {
     cache = Array.isArray(raw)
       ? raw.filter(
           (l): l is CartLine =>
-            typeof l === 'object' && l !== null && Number.isInteger(l.productId) && Number.isInteger(l.priceIndex) && Number.isInteger(l.quantity),
+            typeof l === 'object' &&
+            l !== null &&
+            Number.isInteger(l.productId) &&
+            Number.isInteger(l.priceIndex) &&
+            Number.isInteger(l.quantity),
         )
       : []
   } catch {

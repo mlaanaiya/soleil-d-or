@@ -18,7 +18,10 @@ test.describe('site public', () => {
 
   test('transition « lever de soleil » vers la carte', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link', { name: 'La carte' }).click()
+    await page
+      .getByRole('navigation', { name: 'Navigation principale' })
+      .getByRole('link', { name: 'La carte' })
+      .click()
     await expect(page).toHaveURL(/\/carte$/)
     await settled(page)
     await expect(page.getByRole('heading', { level: 1 })).toContainText('La carte')
@@ -26,7 +29,16 @@ test.describe('site public', () => {
 
   test('carte : catégories, recherche et liste rapide', async ({ page }) => {
     await page.goto('/carte')
-    for (const name of ['Sandwichs', 'Assiettes', 'Tacos', 'Burgers', 'Crousty riz', 'Bowls', 'Accompagnements', 'Boissons']) {
+    for (const name of [
+      'Sandwichs',
+      'Assiettes',
+      'Tacos',
+      'Burgers',
+      'Crousty riz',
+      'Bowls',
+      'Accompagnements',
+      'Boissons',
+    ]) {
       await expect(page.getByRole('heading', { level: 2, name, exact: true })).toBeAttached()
     }
     await page.getByLabel('Rechercher un produit').fill('kébab')
@@ -54,7 +66,10 @@ test.describe('site public', () => {
 
   test('galerie : visionneuse au clavier', async ({ page }) => {
     await page.goto('/galerie')
-    await page.getByRole('button', { name: /Agrandir/ }).first().click()
+    await page
+      .getByRole('button', { name: /Agrandir/ })
+      .first()
+      .click()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toHaveAttribute('data-open', 'true')
     await expect(dialog.getByText('01 /')).toBeVisible()
@@ -111,9 +126,15 @@ test.describe('référencement et sécurité', () => {
   })
 
   test('routes protégées', async ({ request }) => {
-    const upload = await request.post('/api/admin/media', { multipart: { kind: 'photo' }, headers: { origin: 'http://localhost:3200' } })
+    const upload = await request.post('/api/admin/media', {
+      multipart: { kind: 'photo' },
+      headers: { origin: 'http://localhost:3200' },
+    })
     expect(upload.status()).toBe(401)
-    const cross = await request.post('/api/admin/media', { multipart: { kind: 'photo' }, headers: { origin: 'https://evil.example' } })
+    const cross = await request.post('/api/admin/media', {
+      multipart: { kind: 'photo' },
+      headers: { origin: 'https://evil.example' },
+    })
     expect(cross.status()).toBe(403)
     expect((await request.get('/media/..%2F..%2Fsoleil-d-or.sqlite/800.webp')).status()).toBe(404)
     expect((await request.get('/media/abcdefghij/../../x')).status()).toBe(404)

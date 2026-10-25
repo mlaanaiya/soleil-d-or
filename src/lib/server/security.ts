@@ -36,9 +36,8 @@ export function passwordProblem(password: string): string | null {
 export type User = { id: number; username: string }
 
 export function findUserByCredentials(username: string, password: string): User | null {
-  const row = db()
-    .prepare('SELECT id, username, password_hash FROM users WHERE username = ?')
-    .get(username.trim()) as { id: number; username: string; password_hash: string } | undefined
+  const row = db().prepare('SELECT id, username, password_hash FROM users WHERE username = ?').get(username.trim()) as
+    { id: number; username: string; password_hash: string } | undefined
   // Hash anyway when the user is unknown so response time does not reveal valid usernames.
   if (!row) {
     verifyPassword(password, DUMMY_HASH)
@@ -65,8 +64,7 @@ export function upsertUser(username: string, password: string) {
 
 export function changePassword(userId: number, current: string, next: string): string | null {
   const row = db().prepare('SELECT password_hash FROM users WHERE id = ?').get(userId) as
-    | { password_hash: string }
-    | undefined
+    { password_hash: string } | undefined
   if (!row || !verifyPassword(current, row.password_hash)) return 'Mot de passe actuel incorrect.'
   const problem = passwordProblem(next)
   if (problem) return problem
@@ -92,9 +90,7 @@ export function createSession(userId: number): { token: string; expiresAt: numbe
 export function userForSession(token: string | undefined): User | null {
   if (!token || token.length > 100) return null
   const row = db()
-    .prepare(
-      `SELECT u.id, u.username, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ?`,
-    )
+    .prepare(`SELECT u.id, u.username, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ?`)
     .get(sha256(token)) as { id: number; username: string; expires_at: number } | undefined
   if (!row || row.expires_at < Date.now()) return null
   return { id: row.id, username: row.username }
@@ -117,8 +113,7 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
   const now = Date.now()
   return db().transaction(() => {
     const row = db().prepare('SELECT count, reset_at FROM rate_limits WHERE key = ?').get(key) as
-      | { count: number; reset_at: number }
-      | undefined
+      { count: number; reset_at: number } | undefined
     if (!row || row.reset_at < now) {
       db()
         .prepare('INSERT OR REPLACE INTO rate_limits (key, count, reset_at) VALUES (?, 1, ?)')

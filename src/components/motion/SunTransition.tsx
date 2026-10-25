@@ -88,9 +88,18 @@ export function SunTransition() {
   useEffect(() => {
     if (prefersReducedMotion()) return
     const onClick = (event: MouseEvent) => {
-      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      )
+        return
       const anchor = (event.target as Element | null)?.closest?.('a')
-      if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download') || 'noTransition' in anchor.dataset) return
+      if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download') || 'noTransition' in anchor.dataset)
+        return
       const url = new URL(anchor.href, window.location.href)
       if (url.origin !== window.location.origin) return
       if (EXCLUDED.some((p) => url.pathname === p || url.pathname.startsWith(`${p}/`))) return

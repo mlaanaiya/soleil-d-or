@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { useTempDataDir } from './setup-db'
+import { createTempDataDir } from './setup-db'
 
-useTempDataDir()
+createTempDataDir()
 
 const { db } = await import('@/lib/server/db')
 const catalog = await import('@/lib/server/catalog')
@@ -17,10 +17,41 @@ let soldOutId = 0
 let categoryId = 0
 
 beforeAll(() => {
-  categoryId = catalog.createCategory({ name: 'Burgers', slug: 'burgers', tagline: '', description: '', coverMediaId: null, visible: true })
-  const base = { categoryId, description: '', details: '', photoMediaId: null, cutoutMediaId: null, visible: true, featured: false, badge: '' }
-  burgerId = catalog.createProduct({ ...base, name: 'Burger', slug: 'burger', available: true, prices: [{ label: 'Seul', cents: 850 }, { label: 'Menu', cents: 1100 }] })
-  soldOutId = catalog.createProduct({ ...base, name: 'Rupture', slug: 'rupture', available: false, prices: [{ label: '', cents: 500 }] })
+  categoryId = catalog.createCategory({
+    name: 'Burgers',
+    slug: 'burgers',
+    tagline: '',
+    description: '',
+    coverMediaId: null,
+    visible: true,
+  })
+  const base = {
+    categoryId,
+    description: '',
+    details: '',
+    photoMediaId: null,
+    cutoutMediaId: null,
+    visible: true,
+    featured: false,
+    badge: '',
+  }
+  burgerId = catalog.createProduct({
+    ...base,
+    name: 'Burger',
+    slug: 'burger',
+    available: true,
+    prices: [
+      { label: 'Seul', cents: 850 },
+      { label: 'Menu', cents: 1100 },
+    ],
+  })
+  soldOutId = catalog.createProduct({
+    ...base,
+    name: 'Rupture',
+    slug: 'rupture',
+    available: false,
+    prices: [{ label: '', cents: 500 }],
+  })
   catalog.createProduct({ ...base, name: 'Sans prix', slug: 'sans-prix', available: true, prices: [] })
   settings.setSetting('hours', { week: { mon: [{ open: '11:00', close: '23:00' }] } })
 })
@@ -41,7 +72,20 @@ describe('schema & settings', () => {
 describe('catalogue', () => {
   it('refuses duplicate slugs', () => {
     expect(() =>
-      catalog.createProduct({ name: 'X', slug: 'burger', categoryId, description: '', details: '', prices: [], photoMediaId: null, cutoutMediaId: null, available: true, visible: true, featured: false, badge: '' }),
+      catalog.createProduct({
+        name: 'X',
+        slug: 'burger',
+        categoryId,
+        description: '',
+        details: '',
+        prices: [],
+        photoMediaId: null,
+        cutoutMediaId: null,
+        available: true,
+        visible: true,
+        featured: false,
+        badge: '',
+      }),
     ).toThrow(catalog.CatalogError)
   })
   it('protects non-empty categories from deletion', () => {
@@ -94,8 +138,12 @@ describe('orders', () => {
   })
 
   it('rejects unavailable products, unknown price options and invalid slots', () => {
-    expect(() => bookings.createOrder(order({ items: [{ productId: soldOutId, priceIndex: 0, quantity: 1 }] }), NOON)).toThrow(/indisponible/)
-    expect(() => bookings.createOrder(order({ items: [{ productId: burgerId, priceIndex: 5, quantity: 1 }] }), NOON)).toThrow(/prix/)
+    expect(() =>
+      bookings.createOrder(order({ items: [{ productId: soldOutId, priceIndex: 0, quantity: 1 }] }), NOON),
+    ).toThrow(/indisponible/)
+    expect(() =>
+      bookings.createOrder(order({ items: [{ productId: burgerId, priceIndex: 5, quantity: 1 }] }), NOON),
+    ).toThrow(/prix/)
     expect(() => bookings.createOrder(order({ pickupAt: '2026-10-26T12:05' }), NOON)).toThrow(/créneau/)
     expect(() => bookings.createOrder(order({ pickupAt: '2026-10-26T23:30' }), NOON)).toThrow(/créneau/)
   })
@@ -109,11 +157,22 @@ describe('orders', () => {
 })
 
 describe('reservations', () => {
-  const resa = (over: object = {}) => ({ name: 'Sam', phone: '0600000000', email: '', date: '2026-10-26', time: '19:00', partySize: 4, note: '', ...over })
+  const resa = (over: object = {}) => ({
+    name: 'Sam',
+    phone: '0600000000',
+    email: '',
+    date: '2026-10-26',
+    time: '19:00',
+    partySize: 4,
+    note: '',
+    ...over,
+  })
 
   it('is refused while disabled, then validates party size and slots', () => {
     expect(() => bookings.createReservation(resa(), NOON)).toThrow(/pas disponible/)
-    settings.setSetting('services', { reservations: { enabled: true, maxParty: 6, slotMinutes: 30, leadMinutes: 60, maxDaysAhead: 14 } })
+    settings.setSetting('services', {
+      reservations: { enabled: true, maxParty: 6, slotMinutes: 30, leadMinutes: 60, maxDaysAhead: 14 },
+    })
     expect(() => bookings.createReservation(resa({ partySize: 9 }), NOON)).toThrow(/6 personnes/)
     expect(() => bookings.createReservation(resa({ time: '12:30' }), NOON)).toThrow(/horaire/)
     expect(() => bookings.createReservation(resa({ date: '2026-10-27' }), NOON)).toThrow(/horaire/) // Tuesday: closed

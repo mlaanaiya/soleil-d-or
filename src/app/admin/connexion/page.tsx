@@ -19,8 +19,9 @@ export default async function LoginPage(props: PageProps<'/admin/connexion'>) {
         <h1>Administration</h1>
         {noAccount ? (
           <p className="adm-alert">
-            Aucun compte n’existe encore. Créez-le sur le serveur avec <code>npm run admin:create -- votre-identifiant</code>{' '}
-            ou définissez <code>ADMIN_USERNAME</code> et <code>ADMIN_PASSWORD</code> puis redémarrez.
+            Aucun compte n’existe encore. Créez-le sur le serveur avec{' '}
+            <code>npm run admin:create -- votre-identifiant</code> ou définissez <code>ADMIN_USERNAME</code> et{' '}
+            <code>ADMIN_PASSWORD</code> puis redémarrez.
           </p>
         ) : (
           <LoginForm next={typeof suite === 'string' ? suite : '/admin'} />

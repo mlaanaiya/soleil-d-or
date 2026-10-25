@@ -23,7 +23,11 @@ export default async function EditProduct(props: PageProps<'/admin/produits/[id]
           <h1 className="adm-title">{product.name}</h1>
         </div>
       </header>
-      {cree && <p className="adm-success" style={{ marginBottom: 16 }}>Produit créé : il est déjà en ligne.</p>}
+      {cree && (
+        <p className="adm-success" style={{ marginBottom: 16 }}>
+          Produit créé : il est déjà en ligne.
+        </p>
+      )}
       <ProductForm
         key={product.updatedAt}
         values={{

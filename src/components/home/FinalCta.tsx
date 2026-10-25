@@ -1,7 +1,15 @@
 import Link from 'next/link'
 import styles from './FinalCta.module.css'
 
-export function FinalCta({ title, primary, secondary }: { title: string; primary: { href: string; label: string }; secondary: { href: string; label: string } }) {
+export function FinalCta({
+  title,
+  primary,
+  secondary,
+}: {
+  title: string
+  primary: { href: string; label: string }
+  secondary: { href: string; label: string }
+}) {
   return (
     <section className={`section ${styles.cta}`} aria-labelledby="cta-title">
       <div className={`container ${styles.inner}`}>

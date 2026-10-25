@@ -16,7 +16,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/galerie`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${base}/mentions-legales`, changeFrequency: 'yearly', priority: 0.1 },
   ]
-  if (services.ordering.enabled || services.externalLinks.length > 0) pages.push({ url: `${base}/commander`, changeFrequency: 'monthly', priority: 0.7 })
+  if (services.ordering.enabled || services.externalLinks.length > 0)
+    pages.push({ url: `${base}/commander`, changeFrequency: 'monthly', priority: 0.7 })
   if (services.reservations.enabled) pages.push({ url: `${base}/reserver`, changeFrequency: 'monthly', priority: 0.7 })
   const products = listProducts({ publicOnly: true }).map((p) => ({
     url: `${base}/carte/${p.slug}`,

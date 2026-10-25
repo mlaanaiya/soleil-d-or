@@ -73,7 +73,11 @@ function PriceEditor({ row, onSaved }: { row: AdminProductRow; onSaved: (s: Acti
         </div>
       ))}
       <div className="adm-row" style={{ gap: 6 }}>
-        <button type="button" className="adm-btn adm-btn--small" onClick={() => setRows((r) => [...r, { label: '', amount: '' }])}>
+        <button
+          type="button"
+          className="adm-btn adm-btn--small"
+          onClick={() => setRows((r) => [...r, { label: '', amount: '' }])}
+        >
           + Formule
         </button>
         {dirty && (
@@ -148,8 +152,16 @@ export function ProductRows({ groups, onlyMissing }: { groups: AdminCategoryGrou
                     <Link href={`/admin/produits/${p.id}`}>{p.name}</Link>
                     <div className="adm-tags">
                       {!p.visible && <span className="adm-tag">Masqué du site</span>}
-                      {p.badge && <span className="adm-tag" data-tone="sun">{p.badge}</span>}
-                      {p.prices.length === 0 && <span className="adm-tag" data-tone="off">Sans prix</span>}
+                      {p.badge && (
+                        <span className="adm-tag" data-tone="sun">
+                          {p.badge}
+                        </span>
+                      )}
+                      {p.prices.length === 0 && (
+                        <span className="adm-tag" data-tone="off">
+                          Sans prix
+                        </span>
+                      )}
                     </div>
                   </div>
                   <PriceEditor row={p} onSaved={setState} />
@@ -178,7 +190,13 @@ export function ProductRows({ groups, onlyMissing }: { groups: AdminCategoryGrou
                     </button>
                   </div>
                   <div className="adm-order-btns">
-                    <button type="button" className="adm-icon-btn" disabled={i === 0 || pending} onClick={() => run(() => moveProduct(p.id, -1))} aria-label={`Monter ${p.name}`}>
+                    <button
+                      type="button"
+                      className="adm-icon-btn"
+                      disabled={i === 0 || pending}
+                      onClick={() => run(() => moveProduct(p.id, -1))}
+                      aria-label={`Monter ${p.name}`}
+                    >
                       ↑
                     </button>
                     <button

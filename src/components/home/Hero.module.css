@@ -8,16 +8,6 @@
   inherits: true;
   initial-value: 0;
 }
-@property --lx {
-  syntax: '<percentage>';
-  inherits: true;
-  initial-value: 50%;
-}
-@property --ly {
-  syntax: '<percentage>';
-  inherits: true;
-  initial-value: 40%;
-}
 
 .hero {
   --horizon: 68%;
@@ -37,27 +27,33 @@
   position: absolute;
   inset: 0;
 }
-.stage[data-auto='true'] {
-  animation: drift 11s ease-in-out infinite alternate;
+.stage[data-auto='true'] .layer {
+  animation: layerDrift 12s ease-in-out infinite alternate;
 }
-@keyframes drift {
+.stage[data-auto='true'] .beam {
+  animation: beamDrift 9s ease-in-out infinite alternate;
+}
+.stage[data-auto='paused'] .layer,
+.stage[data-auto='paused'] .beam {
+  animation-play-state: paused;
+}
+@keyframes layerDrift {
+  from {
+    transform: translate3d(calc(var(--depth) * 14px), calc(var(--depth) * 5px), 0);
+  }
+  to {
+    transform: translate3d(calc(var(--depth) * -16px), calc(var(--depth) * -7px), 0);
+  }
+}
+@keyframes beamDrift {
   0% {
-    --px: -0.5;
-    --py: -0.2;
-    --lx: 25%;
-    --ly: 30%;
+    transform: translate(-28%, -18%);
   }
   50% {
-    --px: 0.3;
-    --py: 0.3;
-    --lx: 70%;
-    --ly: 45%;
+    transform: translate(18%, -2%);
   }
   100% {
-    --px: 0.6;
-    --py: -0.3;
-    --lx: 55%;
-    --ly: 25%;
+    transform: translate(6%, -24%);
   }
 }
 
@@ -88,7 +84,14 @@
   width: var(--sun);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 38%, #fff4c8 0%, var(--soleil-pale) 16%, var(--soleil) 42%, var(--soleil-hot) 72%, #f08a00 100%);
+  background: radial-gradient(
+    circle at 50% 38%,
+    #fff4c8 0%,
+    var(--soleil-pale) 16%,
+    var(--soleil) 42%,
+    var(--soleil-hot) 72%,
+    #f08a00 100%
+  );
   transform: translate(-50%, -58%);
   animation: sunrise 2s var(--ease-out) 0.25s both;
 }
@@ -157,7 +160,14 @@
   right: 0;
   top: var(--horizon);
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgb(255 194 26 / 0.7) 20%, rgb(255 194 26 / 0.9) 50%, rgb(255 194 26 / 0.7) 80%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 194 26 / 0.7) 20%,
+    rgb(255 194 26 / 0.9) 50%,
+    rgb(255 194 26 / 0.7) 80%,
+    transparent
+  );
   transform-origin: 50% 50%;
   animation: draw 1.2s var(--ease-in-out) 0.05s both;
 }
@@ -180,11 +190,11 @@
   transform: translateX(-50%);
   animation: productIn 1.5s var(--ease-out) 1.05s both;
 }
+/* No opacity here: the product is painted from the first frame (good for LCP) and emerges from the dark. */
 @keyframes productIn {
   from {
-    opacity: 0;
     transform: translate(-50%, 16%) scale(0.88);
-    filter: blur(14px);
+    filter: blur(14px) brightness(0.25);
   }
   to {
     opacity: 1;
@@ -232,23 +242,35 @@
   filter: drop-shadow(0 30px 40px rgb(0 0 0 / 0.45)) brightness(0.9);
 }
 
-/* Signature n°1 — « La lumière » : the pointer is a sun that relights the food, masked to its silhouette. */
+/* Signature n°1 — « La lumière » : the pointer is a sun that relights the food, masked to its silhouette.
+   The mask is static; only the beam inside it moves (a transform), which keeps it cheap. */
 .light {
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    circle at var(--lx) var(--ly),
-    rgb(255 244 200 / 0.95) 0%,
-    rgb(255 200 80 / 0.5) 18%,
-    rgb(255 170 30 / 0.12) 38%,
-    transparent 55%
-  );
+  overflow: hidden;
   mix-blend-mode: overlay;
   -webkit-mask-image: var(--mask);
   mask-image: var(--mask);
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
   pointer-events: none;
+}
+/* Until its mask is set, the light stays off (it would otherwise light the whole box). */
+.light:not([style]) {
+  display: none;
+}
+.beam {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgb(255 244 200 / 0.95) 0%,
+    rgb(255 200 80 / 0.5) 18%,
+    rgb(255 170 30 / 0.12) 38%,
+    transparent 55%
+  );
+  transform: translate(calc(var(--lx, 50%) - 50%), calc(var(--ly, 40%) - 50%));
+  will-change: transform;
 }
 
 .shadow {
@@ -276,12 +298,10 @@
 }
 @keyframes accentIn {
   from {
-    opacity: 0;
     clip-path: inset(0 100% 0 0);
   }
   to {
-    opacity: 1;
-    clip-path: inset(0 -10% 0 0);
+    clip-path: inset(-20% -10% -20% 0);
   }
 }
 

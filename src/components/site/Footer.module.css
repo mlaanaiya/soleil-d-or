@@ -72,7 +72,13 @@
   aspect-ratio: 1;
   margin-left: calc(clamp(200px, 30vw, 520px) / -2);
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 40%, var(--soleil-pale), var(--soleil) 40%, var(--soleil-hot) 70%, var(--braise));
+  background: radial-gradient(
+    circle at 50% 40%,
+    var(--soleil-pale),
+    var(--soleil) 40%,
+    var(--soleil-hot) 70%,
+    var(--braise)
+  );
   transform: translateY(18%);
 }
 .sun::before {

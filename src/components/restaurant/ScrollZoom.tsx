@@ -18,7 +18,11 @@ export function ScrollZoom({ media, focus, label }: { media: Media; focus: strin
       gsap.fromTo(
         el.querySelector('img'),
         { scale: 1.15 },
-        { scale: 2.1, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true } },
+        {
+          scale: 2.1,
+          ease: 'none',
+          scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true },
+        },
       )
     })
     return () => mm.revert()
@@ -26,7 +30,13 @@ export function ScrollZoom({ media, focus, label }: { media: Media; focus: strin
 
   return (
     <figure ref={root} className={styles.zoom}>
-      <Picture media={media} sizes="(max-width: 760px) 100vw, 50vw" focus={focus} className={styles.zoomPic} alt={media.alt} />
+      <Picture
+        media={media}
+        sizes="(max-width: 760px) 100vw, 50vw"
+        focus={focus}
+        className={styles.zoomPic}
+        alt={media.alt}
+      />
       <figcaption className={styles.zoomLabel}>{label}</figcaption>
     </figure>
   )

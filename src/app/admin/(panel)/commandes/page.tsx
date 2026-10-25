@@ -8,7 +8,14 @@ import { getSetting } from '@/lib/server/settings'
 
 export const metadata: Metadata = { title: 'Commandes' }
 
-const dateTime = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })
+const dateTime = new Intl.DateTimeFormat('fr-FR', {
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'Europe/Paris',
+})
 
 function toAdmin(o: Order): AdminOrder {
   const [date, time] = o.pickupAt.split('T')
@@ -19,7 +26,12 @@ function toAdmin(o: Order): AdminOrder {
     customerName: o.customerName,
     phone: o.phone,
     pickupLabel: date === today ? `à ${time}` : `le ${date} à ${time}`,
-    items: o.items.map((i) => ({ name: i.name, label: i.label, quantity: i.quantity, total: formatPrice(i.cents * i.quantity) })),
+    items: o.items.map((i) => ({
+      name: i.name,
+      label: i.label,
+      quantity: i.quantity,
+      total: formatPrice(i.cents * i.quantity),
+    })),
     total: formatPrice(o.totalCents),
     note: o.note,
     status: o.status,
@@ -38,7 +50,9 @@ export default async function OrdersAdmin(props: PageProps<'/admin/commandes'>) 
         <div>
           <h1 className="adm-title">Commandes</h1>
           <p className="adm-sub">
-            {enabled ? 'Commandes à retirer, de la plus proche à la plus lointaine.' : 'La commande en ligne est désactivée (Informations & services).'}
+            {enabled
+              ? 'Commandes à retirer, de la plus proche à la plus lointaine.'
+              : 'La commande en ligne est désactivée (Informations & services).'}
           </p>
         </div>
       </header>

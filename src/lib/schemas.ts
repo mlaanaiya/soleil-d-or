@@ -127,11 +127,7 @@ export const chapterSchema = z.object({ title: trimmed(80), text: trimmed(1200) 
 export const contentSchema = z.object({
   heroKicker: trimmed(60).default('Restauration rapide'),
   heroTagline: trimmed(140).default('Le goût en pleine lumière.'),
-  heroProducts: z.array(z.string()).max(4).default([
-    'double-cheeseburger',
-    'naan-kebab',
-    'tacos-poulet',
-  ]),
+  heroProducts: z.array(z.string()).max(4).default(['double-cheeseburger', 'naan-kebab', 'tacos-poulet']),
   manifesto: trimmed(600).default(
     'Sous le soleil, tout devient plus doré. Sandwichs, assiettes, tacos, burgers, crousty riz et bowls : chaque recette est mise en lumière, du premier coup d’œil à la dernière bouchée.',
   ),
@@ -149,20 +145,23 @@ export const contentSchema = z.object({
   restaurantIntro: trimmed(600).default(
     'Soleil d’Or, c’est une carte de restauration rapide pensée comme une affiche : du noir charbon, du crème, et une lumière jaune qui fait briller chaque produit.',
   ),
-  chapters: z.array(chapterSchema).max(6).default([
-    {
-      title: 'La lumière',
-      text: 'Noir charbon, crème lumineux, jaune solaire. Notre identité tient en trois couleurs, des affiches du restaurant jusqu’aux écrans du comptoir.',
-    },
-    {
-      title: 'La carte',
-      text: 'Sandwichs, assiettes, tacos, burgers, crousty riz, bowls, accompagnements et boissons : huit familles pour toutes les faims.',
-    },
-    {
-      title: 'Le geste',
-      text: 'Du grillé, du doré, du croustillant. Les produits de la carte sont présentés tels qu’ils arrivent dans l’assiette.',
-    },
-  ]),
+  chapters: z
+    .array(chapterSchema)
+    .max(6)
+    .default([
+      {
+        title: 'La lumière',
+        text: 'Noir charbon, crème lumineux, jaune solaire. Notre identité tient en trois couleurs, des affiches du restaurant jusqu’aux écrans du comptoir.',
+      },
+      {
+        title: 'La carte',
+        text: 'Sandwichs, assiettes, tacos, burgers, crousty riz, bowls, accompagnements et boissons : huit familles pour toutes les faims.',
+      },
+      {
+        title: 'Le geste',
+        text: 'Du grillé, du doré, du croustillant. Les produits de la carte sont présentés tels qu’ils arrivent dans l’assiette.',
+      },
+    ]),
   ctaTitle: trimmed(80).default('Une petite faim ?'),
   contactIntro: trimmed(400).default('Toutes les informations pratiques pour venir à Soleil d’Or.'),
   legalNotice: trimmed(6000).default(''),

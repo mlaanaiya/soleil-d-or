@@ -23,7 +23,9 @@ export function AdminShell({ username, counts, showOrders, showReservations, chi
     setOpen(false)
   }
   const current = (href: string) =>
-    (href === '/admin' ? pathname === '/admin' : pathname === href || pathname.startsWith(`${href}/`)) ? 'page' : undefined
+    (href === '/admin' ? pathname === '/admin' : pathname === href || pathname.startsWith(`${href}/`))
+      ? 'page'
+      : undefined
 
   const groups: Array<{ title: string; links: Array<{ href: string; label: string; count?: number }> }> = [
     { title: 'Accueil', links: [{ href: '/admin', label: 'Tableau de bord' }] },
@@ -60,7 +62,12 @@ export function AdminShell({ username, counts, showOrders, showReservations, chi
           Menu{counts.orders + counts.reservations > 0 ? ` (${counts.orders + counts.reservations})` : ''}
         </button>
       </div>
-      <aside id="adm-side" className="adm-side" data-open={open} onClick={(e) => e.target === e.currentTarget && setOpen(false)}>
+      <aside
+        id="adm-side"
+        className="adm-side"
+        data-open={open}
+        onClick={(e) => e.target === e.currentTarget && setOpen(false)}
+      >
         <Link href="/admin" className="adm-brand">
           <SunMark size={26} className="adm-mark" />
           <div>

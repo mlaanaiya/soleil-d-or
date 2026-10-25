@@ -10,7 +10,7 @@ type Props = { media: Media; sizes: string; alt?: string; className?: string; pr
 
 /**
  * Signature n°1 — « La lumière » applied to full photographs: the image rests in shadow and the
- * pointer becomes a sun that brings it back to full light. Touch screens get a slow drifting sun.
+ * pointer becomes a sun that brings it back to full light. On touch screens a tap moves the sun.
  */
 export function SunlitPicture({ media, sizes, alt, className, priority, focus }: Props) {
   const root = useRef<HTMLDivElement>(null)
@@ -18,10 +18,8 @@ export function SunlitPicture({ media, sizes, alt, className, priority, focus }:
   useEffect(() => {
     const el = root.current
     if (!el || prefersReducedMotion()) return
-    if (isTouch()) {
-      el.dataset.auto = 'true'
-      return
-    }
+    const touch = isTouch()
+    if (touch) el.dataset.auto = 'true'
     let x = 50
     let y = 45
     let tx = x
@@ -38,11 +36,19 @@ export function SunlitPicture({ media, sizes, alt, className, priority, focus }:
       const r = el.getBoundingClientRect()
       tx = ((e.clientX - r.left) / r.width) * 100
       ty = ((e.clientY - r.top) / r.height) * 100
-      el.dataset.lit = 'true'
+      if (!touch) el.dataset.lit = 'true'
       if (!frame) frame = requestAnimationFrame(loop)
     }
     const onLeave = () => {
       el.dataset.lit = 'false'
+    }
+    if (touch) {
+      // A tap moves the sun to the finger; the light stays put between taps.
+      el.addEventListener('pointerdown', onMove)
+      return () => {
+        cancelAnimationFrame(frame)
+        el.removeEventListener('pointerdown', onMove)
+      }
     }
     el.addEventListener('pointermove', onMove)
     el.addEventListener('pointerleave', onLeave)

@@ -18,7 +18,12 @@ export function Toast({ state }: { state: ActionState | null }) {
   }, [visible])
   if (!visible?.message) return null
   return (
-    <div className="adm-toast" data-ok={visible.ok} role={visible.ok ? 'status' : 'alert'} onClick={() => setVisible(null)}>
+    <div
+      className="adm-toast"
+      data-ok={visible.ok}
+      role={visible.ok ? 'status' : 'alert'}
+      onClick={() => setVisible(null)}
+    >
       {visible.message}
     </div>
   )

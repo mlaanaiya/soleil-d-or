@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { formatTimeFr, groupedWeek } from '@/lib/hours'
+import { formatSlots, groupedWeek } from '@/lib/hours'
 import { telHref } from '@/lib/format'
 import { NAV } from '@/lib/site'
 import type { SiteContext } from '@/lib/server/public'
@@ -76,11 +76,7 @@ export function Footer({ site }: { site: SiteContext }) {
               {groupedWeek(hours).map((g) => (
                 <div key={g.days}>
                   <dt>{g.days}</dt>
-                  <dd>
-                    {g.slots.length === 0
-                      ? 'Fermé'
-                      : g.slots.map((s) => `${formatTimeFr(s.open)} – ${formatTimeFr(s.close)}`).join(' · ')}
-                  </dd>
+                  <dd>{formatSlots(g.slots)}</dd>
                 </div>
               ))}
             </dl>

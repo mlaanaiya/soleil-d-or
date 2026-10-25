@@ -10,7 +10,10 @@ export default async function HoursAdmin() {
       <header className="adm-page-head">
         <div>
           <h1 className="adm-title">Horaires</h1>
-          <p className="adm-sub">Ils alimentent l’état « Ouvert / Fermé » du site, la page Contact, les données Google et les créneaux de commande.</p>
+          <p className="adm-sub">
+            Ils alimentent l’état « Ouvert / Fermé » du site, la page Contact, les données Google et les créneaux de
+            commande.
+          </p>
         </div>
       </header>
       <HoursEditor initial={getSetting('hours')} />

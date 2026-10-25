@@ -34,25 +34,28 @@ function readPrices(form: FormData): Price[] {
 export async function saveProduct(_: ActionState, form: FormData): Promise<ActionState> {
   const id = int(form, 'id')
   let createdId = 0
-  const result = await runAdmin(() => {
-    const name = str(form, 'name')
-    const input = productInputSchema.parse({
-      name,
-      slug: str(form, 'slug') || slugify(name),
-      categoryId: int(form, 'categoryId'),
-      description: str(form, 'description'),
-      details: str(form, 'details'),
-      prices: readPrices(form),
-      photoMediaId: nullableId(form, 'photoMediaId'),
-      cutoutMediaId: nullableId(form, 'cutoutMediaId'),
-      available: bool(form, 'available'),
-      visible: bool(form, 'visible'),
-      featured: bool(form, 'featured'),
-      badge: str(form, 'badge'),
-    })
-    if (id) updateProduct(id, input)
-    else createdId = createProduct(input)
-  }, id ? 'Produit enregistré. Le site est à jour.' : 'Produit créé.')
+  const result = await runAdmin(
+    () => {
+      const name = str(form, 'name')
+      const input = productInputSchema.parse({
+        name,
+        slug: str(form, 'slug') || slugify(name),
+        categoryId: int(form, 'categoryId'),
+        description: str(form, 'description'),
+        details: str(form, 'details'),
+        prices: readPrices(form),
+        photoMediaId: nullableId(form, 'photoMediaId'),
+        cutoutMediaId: nullableId(form, 'cutoutMediaId'),
+        available: bool(form, 'available'),
+        visible: bool(form, 'visible'),
+        featured: bool(form, 'featured'),
+        badge: str(form, 'badge'),
+      })
+      if (id) updateProduct(id, input)
+      else createdId = createProduct(input)
+    },
+    id ? 'Produit enregistré. Le site est à jour.' : 'Produit créé.',
+  )
   if (result.ok && createdId) redirect(`/admin/produits/${createdId}?cree=1`)
   return result
 }
@@ -83,7 +86,11 @@ export async function quickPrices(id: number, rows: Array<{ label: string; amoun
   }, 'Prix enregistrés.')
 }
 
-export async function toggleProduct(id: number, flag: 'available' | 'visible' | 'featured', value: boolean): Promise<ActionState> {
+export async function toggleProduct(
+  id: number,
+  flag: 'available' | 'visible' | 'featured',
+  value: boolean,
+): Promise<ActionState> {
   return runAdmin(() => setProductFlag(id, flag, value), 'Modification enregistrée.')
 }
 
@@ -99,19 +106,22 @@ export async function moveProduct(id: number, direction: -1 | 1): Promise<Action
 
 export async function saveCategory(_: ActionState, form: FormData): Promise<ActionState> {
   const id = int(form, 'id')
-  return runAdmin(() => {
-    const name = str(form, 'name')
-    const input = categoryInputSchema.parse({
-      name,
-      slug: str(form, 'slug') || slugify(name),
-      tagline: str(form, 'tagline'),
-      description: str(form, 'description'),
-      coverMediaId: nullableId(form, 'coverMediaId'),
-      visible: bool(form, 'visible'),
-    })
-    if (id) updateCategory(id, input)
-    else createCategory(input)
-  }, id ? 'Catégorie enregistrée.' : 'Catégorie créée.')
+  return runAdmin(
+    () => {
+      const name = str(form, 'name')
+      const input = categoryInputSchema.parse({
+        name,
+        slug: str(form, 'slug') || slugify(name),
+        tagline: str(form, 'tagline'),
+        description: str(form, 'description'),
+        coverMediaId: nullableId(form, 'coverMediaId'),
+        visible: bool(form, 'visible'),
+      })
+      if (id) updateCategory(id, input)
+      else createCategory(input)
+    },
+    id ? 'Catégorie enregistrée.' : 'Catégorie créée.',
+  )
 }
 
 export async function removeCategory(id: number): Promise<ActionState> {

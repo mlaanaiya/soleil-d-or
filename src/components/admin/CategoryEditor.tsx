@@ -18,7 +18,17 @@ export type AdminCategory = {
   count: number
 }
 
-export function CategoryEditor({ category, photos, first, last }: { category: AdminCategory; photos: LibraryItem[]; first?: boolean; last?: boolean }) {
+export function CategoryEditor({
+  category,
+  photos,
+  first,
+  last,
+}: {
+  category: AdminCategory
+  photos: LibraryItem[]
+  first?: boolean
+  last?: boolean
+}) {
   const [state, onSubmit, pending] = useAdminForm(saveCategory)
   const [other, setOther] = useState<ActionState | null>(null)
   const [busy, start] = useTransition()
@@ -35,10 +45,22 @@ export function CategoryEditor({ category, photos, first, last }: { category: Ad
               <span className="adm-sub" style={{ marginTop: 0 }}>
                 {category.count} produit{category.count > 1 ? 's' : ''}
               </span>
-              <button type="button" className="adm-icon-btn" disabled={first || busy} onClick={() => run(() => moveCategory(category.id!, -1))} aria-label={`Monter ${category.name}`}>
+              <button
+                type="button"
+                className="adm-icon-btn"
+                disabled={first || busy}
+                onClick={() => run(() => moveCategory(category.id!, -1))}
+                aria-label={`Monter ${category.name}`}
+              >
                 ↑
               </button>
-              <button type="button" className="adm-icon-btn" disabled={last || busy} onClick={() => run(() => moveCategory(category.id!, 1))} aria-label={`Descendre ${category.name}`}>
+              <button
+                type="button"
+                className="adm-icon-btn"
+                disabled={last || busy}
+                onClick={() => run(() => moveCategory(category.id!, 1))}
+                aria-label={`Descendre ${category.name}`}
+              >
                 ↓
               </button>
             </div>
@@ -69,7 +91,14 @@ export function CategoryEditor({ category, photos, first, last }: { category: Ad
           <textarea name="description" maxLength={600} defaultValue={category.description} />
         </label>
         <div className="adm-grid-2">
-          <MediaPicker name="coverMediaId" kind="photo" label="Photo de couverture" help="utilisée sur l’accueil" value={category.coverMediaId} library={photos} />
+          <MediaPicker
+            name="coverMediaId"
+            kind="photo"
+            label="Photo de couverture"
+            help="utilisée sur l’accueil"
+            value={category.coverMediaId}
+            library={photos}
+          />
           <label className="adm-switch">
             <input type="checkbox" name="visible" defaultChecked={category.visible} />
             <span>
@@ -87,7 +116,10 @@ export function CategoryEditor({ category, photos, first, last }: { category: Ad
               type="button"
               className="adm-btn adm-btn--danger"
               disabled={busy}
-              onClick={() => window.confirm(`Supprimer la catégorie « ${category.name} » ?`) && run(() => removeCategory(category.id!))}
+              onClick={() =>
+                window.confirm(`Supprimer la catégorie « ${category.name} » ?`) &&
+                run(() => removeCategory(category.id!))
+              }
             >
               Supprimer
             </button>

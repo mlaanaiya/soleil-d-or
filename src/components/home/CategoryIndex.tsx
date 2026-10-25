@@ -56,25 +56,25 @@ export function CategoryIndex({ title, categories }: { title: string; categories
         </header>
 
         <div ref={list} className={styles.listWrap} onPointerLeave={() => setHovered(null)}>
-        <ul className={styles.list}>
-          {categories.map((c, i) => (
-            <li key={c.slug} onPointerEnter={() => setHovered(i)}>
-              <Link href={`/carte#${c.slug}`} className={styles.row} data-active={hovered === i}>
-                <span className={styles.num}>{String(i + 1).padStart(2, '0')}</span>
-                <span className={styles.name}>{c.name}</span>
-                <span className={styles.tagline}>{c.tagline}</span>
-                <span className={styles.count}>
-                  {c.count > 0 ? `${c.count} produit${c.count > 1 ? 's' : ''}` : 'Bientôt'}
-                </span>
-                {c.cover && (
-                  <span className={styles.thumb} aria-hidden="true">
-                    <Picture media={c.cover} sizes="80px" alt="" />
+          <ul className={styles.list}>
+            {categories.map((c, i) => (
+              <li key={c.slug} onPointerEnter={() => setHovered(i)}>
+                <Link href={`/carte#${c.slug}`} className={styles.row} data-active={hovered === i}>
+                  <span className={styles.num}>{String(i + 1).padStart(2, '0')}</span>
+                  <span className={styles.name}>{c.name}</span>
+                  <span className={styles.tagline}>{c.tagline}</span>
+                  <span className={styles.count}>
+                    {c.count > 0 ? `${c.count} produit${c.count > 1 ? 's' : ''}` : 'Bientôt'}
                   </span>
-                )}
-              </Link>
-            </li>
-          ))}
-        </ul>
+                  {c.cover && (
+                    <span className={styles.thumb} aria-hidden="true">
+                      <Picture media={c.cover} sizes="80px" alt="" />
+                    </span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
           <div ref={follower} className={styles.follower} data-visible={hovered !== null} aria-hidden="true">
             {categories.map((c, i) =>
               c.cover ? (

@@ -15,7 +15,9 @@ function safeNext(raw: FormDataEntryValue | null): string {
 }
 
 export async function login(_: LoginState, form: FormData): Promise<LoginState> {
-  const username = String(form.get('username') ?? '').trim().slice(0, 80)
+  const username = String(form.get('username') ?? '')
+    .trim()
+    .slice(0, 80)
   const password = String(form.get('password') ?? '').slice(0, 200)
   const ip = await clientIp()
   const key = `login:${ip}:${username.toLowerCase()}`

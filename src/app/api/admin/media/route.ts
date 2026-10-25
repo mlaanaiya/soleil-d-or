@@ -19,7 +19,8 @@ export async function POST(request: Request) {
   if (!(await currentUser())) return Response.json({ error: 'Session expirée, reconnectez-vous.' }, { status: 401 })
 
   const length = Number(request.headers.get('content-length') ?? 0)
-  if (length > MAX_UPLOAD_BYTES * 4 + 1024 * 1024) return Response.json({ error: 'Envoi trop volumineux.' }, { status: 413 })
+  if (length > MAX_UPLOAD_BYTES * 4 + 1024 * 1024)
+    return Response.json({ error: 'Envoi trop volumineux.' }, { status: 413 })
 
   let form: FormData
   try {
@@ -29,7 +30,10 @@ export async function POST(request: Request) {
   }
   const kind = form.get('kind') === 'cutout' ? 'cutout' : 'photo'
   const inGallery = form.get('inGallery') === 'true'
-  const files = form.getAll('file').filter((f): f is File => f instanceof File).slice(0, 12)
+  const files = form
+    .getAll('file')
+    .filter((f): f is File => f instanceof File)
+    .slice(0, 12)
   if (files.length === 0) return Response.json({ error: 'Aucun fichier reçu.' }, { status: 400 })
 
   const created = []

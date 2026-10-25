@@ -77,7 +77,13 @@ export function ReservationForm({ days, maxParty, note }: { days: ReservableDay[
         <legend>Horaire</legend>
         <div className={styles.timeChips}>
           {day?.slots.map((s) => (
-            <button key={s.value} type="button" className={styles.timeChip} aria-pressed={time === s.value} onClick={() => setTime(s.value)}>
+            <button
+              key={s.value}
+              type="button"
+              className={styles.timeChip}
+              aria-pressed={time === s.value}
+              onClick={() => setTime(s.value)}
+            >
               {s.label}
             </button>
           ))}
@@ -94,7 +100,11 @@ export function ReservationForm({ days, maxParty, note }: { days: ReservableDay[
           <output aria-live="polite">
             {party} <span>{party > 1 ? 'personnes' : 'personne'}</span>
           </output>
-          <button type="button" onClick={() => setParty((p) => Math.min(maxParty, p + 1))} aria-label="Une personne de plus">
+          <button
+            type="button"
+            onClick={() => setParty((p) => Math.min(maxParty, p + 1))}
+            aria-label="Une personne de plus"
+          >
             +
           </button>
         </div>
@@ -108,7 +118,15 @@ export function ReservationForm({ days, maxParty, note }: { days: ReservableDay[
         </label>
         <label className={styles.field}>
           <span>Téléphone</span>
-          <input name="phone" type="tel" inputMode="tel" autoComplete="tel" required maxLength={24} aria-invalid={Boolean(fields.phone)} />
+          <input
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            required
+            maxLength={24}
+            aria-invalid={Boolean(fields.phone)}
+          />
           {fields.phone && <em>{fields.phone}</em>}
         </label>
         <label className={styles.field}>

@@ -38,6 +38,15 @@ export function formatTimeFr(time: string): string {
   return m === '00' ? `${Number(h)}h` : `${Number(h)}h${m}`
 }
 
+/** "11h – 14h30"; an opening equal to its closing time is a 24-hour service. */
+export function formatSlot(slot: Slot): string {
+  return slot.open === slot.close ? '24 h/24' : `${formatTimeFr(slot.open)} – ${formatTimeFr(slot.close)}`
+}
+
+export function formatSlots(slots: Slot[]): string {
+  return slots.length === 0 ? 'Fermé' : slots.map(formatSlot).join(' · ')
+}
+
 export function addDays(date: string, days: number): string {
   const [y, m, d] = date.split('-').map(Number)
   const t = new Date(Date.UTC(y!, m! - 1, d! + days))
@@ -77,8 +86,11 @@ export function intervalsFor(hours: Hours, date: string): Array<[number, number]
 
 export type OpenStatus =
   | { state: 'unknown' }
-  | { state: 'open'; closesAt: string }
-  | { state: 'closed'; opensAt: { date: string; time: string; dayLabel: string; relative: 'today' | 'tomorrow' | 'later' } | null }
+  | { state: 'open'; closesAt: string; allDay?: boolean }
+  | {
+      state: 'closed'
+      opensAt: { date: string; time: string; dayLabel: string; relative: 'today' | 'tomorrow' | 'later' } | null
+    }
 
 export function getOpenStatus(hours: Hours, at: Date = new Date()): OpenStatus {
   if (!hasHours(hours) && hours.exceptions.length === 0) return { state: 'unknown' }
@@ -91,7 +103,11 @@ export function getOpenStatus(hours: Hours, at: Date = new Date()): OpenStatus {
     }
   }
   for (const [start, end] of intervalsFor(hours, now.date)) {
-    if (now.minutes >= start && now.minutes < end) return { state: 'open', closesAt: formatMinutes(end) }
+    if (now.minutes >= start && now.minutes < end) {
+      return end - start >= 1440
+        ? { state: 'open', closesAt: formatMinutes(end), allDay: true }
+        : { state: 'open', closesAt: formatMinutes(end) }
+    }
   }
 
   for (let offset = 0; offset < 8; offset++) {
@@ -144,7 +160,13 @@ export function pickupSlots(hours: Hours, at: Date, leadMinutes: number, step: n
 }
 
 /** Reservation start times for a date: the last seating is one step before closing. */
-export function reservationSlots(hours: Hours, date: string, at: Date, leadMinutes: number, step: number): TimeOption[] {
+export function reservationSlots(
+  hours: Hours,
+  date: string,
+  at: Date,
+  leadMinutes: number,
+  step: number,
+): TimeOption[] {
   const now = zonedNow(at)
   const dayOffset = daysBetween(now.date, date) * 1440
   const options: TimeOption[] = []
@@ -180,7 +202,8 @@ export function groupedWeek(hours: Hours): Array<{ days: string; slots: Slot[] }
 
 export function describeStatus(status: OpenStatus): string {
   if (status.state === 'unknown') return ''
-  if (status.state === 'open') return `Ouvert · jusqu’à ${formatTimeFr(status.closesAt)}`
+  if (status.state === 'open')
+    return status.allDay ? 'Ouvert 24 h/24' : `Ouvert · jusqu’à ${formatTimeFr(status.closesAt)}`
   if (!status.opensAt) return 'Fermé'
   const when =
     status.opensAt.relative === 'today'

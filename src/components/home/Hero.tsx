@@ -30,6 +30,8 @@ export function Hero({ name, kicker, tagline, products, cta, secondary }: Props)
   const stage = useRef<HTMLDivElement>(null)
   const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
+  // Secondary products and light masks wait for the page load, so they never compete with the first paint.
+  const [loaded, setLoaded] = useState(false)
   const [first, ...rest] = name.split(' ')
   const accent = rest.join(' ')
 
@@ -38,8 +40,10 @@ export function Hero({ name, kicker, tagline, products, cta, secondary }: Props)
     const el = stage.current
     if (!el || prefersReducedMotion()) return
     if (isTouch()) {
-      el.dataset.auto = 'true'
-      return
+      // Ambient drift only while the hero is on screen.
+      const io = new IntersectionObserver(([entry]) => (el.dataset.auto = entry?.isIntersecting ? 'true' : 'paused'))
+      io.observe(el)
+      return () => io.disconnect()
     }
     let px = 0
     let py = 0
@@ -90,9 +94,19 @@ export function Hero({ name, kicker, tagline, products, cta, secondary }: Props)
     }
   }, [])
 
+  useEffect(() => {
+    const ready = () => setLoaded(true)
+    if (document.readyState === 'complete') {
+      const id = window.setTimeout(ready, 0)
+      return () => window.clearTimeout(id)
+    }
+    window.addEventListener('load', ready, { once: true })
+    return () => window.removeEventListener('load', ready)
+  }, [])
+
   /* Auto-rotation, paused while hovered/focused, off-screen or in a background tab. */
   useEffect(() => {
-    if (products.length < 2 || paused || prefersReducedMotion()) return
+    if (products.length < 2 || paused || !loaded || prefersReducedMotion()) return
     const el = stage.current
     let visible = true
     const io = new IntersectionObserver(([entry]) => (visible = Boolean(entry?.isIntersecting)))
@@ -104,7 +118,7 @@ export function Hero({ name, kicker, tagline, products, cta, secondary }: Props)
       window.clearInterval(id)
       io.disconnect()
     }
-  }, [products.length, paused])
+  }, [products.length, paused, loaded])
 
   const select = useCallback((i: number) => setActive(i), [])
   const current = products[active]
@@ -118,7 +132,11 @@ export function Hero({ name, kicker, tagline, products, cta, secondary }: Props)
         onPointerLeave={() => setPaused(false)}
       >
         <div className={styles.sky} aria-hidden="true" />
-        <div className={`${styles.layer} ${styles.sunLayer}`} style={{ '--depth': 0.25 } as CSSProperties} aria-hidden="true">
+        <div
+          className={`${styles.layer} ${styles.sunLayer}`}
+          style={{ '--depth': 0.25 } as CSSProperties}
+          aria-hidden="true"
+        >
           <div className={styles.sun} />
         </div>
 
@@ -141,30 +159,29 @@ export function Hero({ name, kicker, tagline, products, cta, secondary }: Props)
 
         <div className={`${styles.layer} ${styles.products}`} style={{ '--depth': 1 } as CSSProperties}>
           <div className={styles.productsIntro}>
-          {products.map((p, i) => (
-            <figure
-              key={p.slug}
-              className={styles.product}
-              data-active={i === active}
-              aria-hidden={i !== active}
-            >
-              <div className={styles.tilt}>
-                <Picture
-                  media={p.cutout}
-                  bare
-                  priority={i === 0}
-                  sizes="(max-width: 760px) 92vw, (max-width: 1400px) 52vw, 760px"
-                  alt={p.name}
-                />
-                <div
-                  className={styles.light}
-                  style={{ '--mask': `url(${mediaUrl(p.cutout, 800)})` } as CSSProperties}
-                  aria-hidden="true"
-                />
-              </div>
-              <div className={styles.shadow} aria-hidden="true" />
-            </figure>
-          ))}
+            {products.map((p, i) => (
+              <figure key={p.slug} className={styles.product} data-active={i === active} aria-hidden={i !== active}>
+                <div className={styles.tilt}>
+                  {(i === 0 || loaded) && (
+                    <Picture
+                      media={p.cutout}
+                      bare
+                      priority={i === 0}
+                      sizes="(max-width: 760px) 72vw, (max-width: 1400px) 44vw, 640px"
+                      alt={p.name}
+                    />
+                  )}
+                  <div
+                    className={styles.light}
+                    style={loaded ? ({ '--mask': `url(${mediaUrl(p.cutout, 800)})` } as CSSProperties) : undefined}
+                    aria-hidden="true"
+                  >
+                    <span className={styles.beam} />
+                  </div>
+                </div>
+                <div className={styles.shadow} aria-hidden="true" />
+              </figure>
+            ))}
           </div>
         </div>
 

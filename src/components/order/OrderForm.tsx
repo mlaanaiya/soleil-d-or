@@ -102,7 +102,12 @@ export function OrderForm({ categories, slots, note, closedMessage }: Props) {
       </div>
 
       <aside className={styles.summary} data-open={sheetOpen} aria-label="Ma commande">
-        <button type="button" className={styles.sheetToggle} onClick={() => setSheetOpen((v) => !v)} aria-expanded={sheetOpen}>
+        <button
+          type="button"
+          className={styles.sheetToggle}
+          onClick={() => setSheetOpen((v) => !v)}
+          aria-expanded={sheetOpen}
+        >
           <span>Ma commande ({count})</span>
           <strong>{formatPrice(total)}</strong>
         </button>
@@ -120,11 +125,19 @@ export function OrderForm({ categories, slots, note, closedMessage }: Props) {
                     {l.price.label && <p className={styles.lineLabel}>{l.price.label}</p>}
                   </div>
                   <div className={styles.stepper}>
-                    <button type="button" onClick={() => cart.set(l.productId, l.priceIndex, l.quantity - 1)} aria-label={`Retirer un ${l.product.name}`}>
+                    <button
+                      type="button"
+                      onClick={() => cart.set(l.productId, l.priceIndex, l.quantity - 1)}
+                      aria-label={`Retirer un ${l.product.name}`}
+                    >
                       −
                     </button>
                     <span aria-live="polite">{l.quantity}</span>
-                    <button type="button" onClick={() => cart.set(l.productId, l.priceIndex, l.quantity + 1)} aria-label={`Ajouter un ${l.product.name}`}>
+                    <button
+                      type="button"
+                      onClick={() => cart.set(l.productId, l.priceIndex, l.quantity + 1)}
+                      aria-label={`Ajouter un ${l.product.name}`}
+                    >
                       +
                     </button>
                   </div>
@@ -160,7 +173,15 @@ export function OrderForm({ categories, slots, note, closedMessage }: Props) {
               </label>
               <label className={styles.field}>
                 <span>Téléphone</span>
-                <input name="phone" type="tel" autoComplete="tel" inputMode="tel" required maxLength={24} aria-invalid={Boolean(fields.phone)} />
+                <input
+                  name="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  inputMode="tel"
+                  required
+                  maxLength={24}
+                  aria-invalid={Boolean(fields.phone)}
+                />
                 {fields.phone && <em>{fields.phone}</em>}
               </label>
               <label className={styles.field}>

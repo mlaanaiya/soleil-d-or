@@ -94,14 +94,18 @@ export function OrdersBoard({ orders, live }: { orders: AdminOrder[]; live: bool
             <article key={o.id} className="adm-order" data-status={o.status}>
               <div className="adm-order-head">
                 <span className="adm-order-ref">{o.ref}</span>
-                <span className="adm-tag" data-tone={o.status === 'new' ? 'sun' : o.status === 'cancelled' ? 'off' : undefined}>
+                <span
+                  className="adm-tag"
+                  data-tone={o.status === 'new' ? 'sun' : o.status === 'cancelled' ? 'off' : undefined}
+                >
                   {ORDER_STATUS_LABELS[o.status]}
                 </span>
               </div>
               <div>
                 <span className="adm-order-time">Retrait {o.pickupLabel}</span>
                 <p className="adm-sub" style={{ marginTop: 0 }}>
-                  {o.customerName} · <a href={`tel:${o.phone.replace(/[^+0-9]/g, '')}`}>{o.phone}</a> · reçue {o.createdLabel}
+                  {o.customerName} · <a href={`tel:${o.phone.replace(/[^+0-9]/g, '')}`}>{o.phone}</a> · reçue{' '}
+                  {o.createdLabel}
                 </p>
               </div>
               <ul>
@@ -122,7 +126,12 @@ export function OrdersBoard({ orders, live }: { orders: AdminOrder[]; live: bool
               </div>
               <div className="adm-order-btns">
                 {NEXT[o.status] && (
-                  <button type="button" className="adm-btn adm-btn--primary adm-btn--small" disabled={pending} onClick={() => run(o.id, NEXT[o.status]!.status)}>
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn--primary adm-btn--small"
+                    disabled={pending}
+                    onClick={() => run(o.id, NEXT[o.status]!.status)}
+                  >
                     {NEXT[o.status]!.label}
                   </button>
                 )}

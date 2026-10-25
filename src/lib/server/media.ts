@@ -165,11 +165,7 @@ export function updateMedia(id: string, patch: { alt?: string; inGallery?: boole
   if (!current) throw new MediaError('Image introuvable.')
   db()
     .prepare('UPDATE media SET alt = ?, in_gallery = ? WHERE id = ?')
-    .run(
-      (patch.alt ?? current.alt).slice(0, 200),
-      (patch.inGallery ?? current.inGallery) ? 1 : 0,
-      id,
-    )
+    .run((patch.alt ?? current.alt).slice(0, 200), (patch.inGallery ?? current.inGallery) ? 1 : 0, id)
 }
 
 export function moveGalleryItem(id: string, direction: -1 | 1) {
@@ -179,7 +175,9 @@ export function moveGalleryItem(id: string, direction: -1 | 1) {
   if (index < 0 || !swap) return
   const reorder = db().transaction(() => {
     items.forEach((m, i) => db().prepare('UPDATE media SET gallery_sort = ? WHERE id = ?').run(i, m.id))
-    db().prepare('UPDATE media SET gallery_sort = ? WHERE id = ?').run(index + direction, id)
+    db()
+      .prepare('UPDATE media SET gallery_sort = ? WHERE id = ?')
+      .run(index + direction, id)
     db().prepare('UPDATE media SET gallery_sort = ? WHERE id = ?').run(index, swap.id)
   })
   reorder()

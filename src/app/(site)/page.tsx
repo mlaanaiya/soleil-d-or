@@ -23,14 +23,22 @@ export default async function HomePage() {
   const { content } = site
   const featured = getFeatured(10)
 
-  let heroProducts = getProductsBySlugs(content.heroProducts).map(toHero).filter((p): p is HeroProduct => p !== null)
-  if (heroProducts.length === 0) heroProducts = featured.map(toHero).filter((p): p is HeroProduct => p !== null).slice(0, 3)
+  let heroProducts = getProductsBySlugs(content.heroProducts)
+    .map(toHero)
+    .filter((p): p is HeroProduct => p !== null)
+  if (heroProducts.length === 0)
+    heroProducts = featured
+      .map(toHero)
+      .filter((p): p is HeroProduct => p !== null)
+      .slice(0, 3)
 
   const menu = getMenu()
   const spotlight = getProductsBySlugs(content.spotlightProducts)
   const shots = getGalleryShots()
   const stampPhoto = getProductsBySlugs(['naans'])[0]?.photo ?? shots[0]?.media ?? null
-  const orderCta = site.canOrder ? { href: '/commander', label: 'Commander' } : { href: '/contact', label: 'Nous trouver' }
+  const orderCta = site.canOrder
+    ? { href: '/commander', label: 'Commander' }
+    : { href: '/contact', label: 'Nous trouver' }
 
   return (
     <>

@@ -31,7 +31,13 @@ export function MobileDock({ phone, directions, cta }: Props) {
         <Link href="/carte" className={styles.item}>
           <span className={styles.icon} aria-hidden="true">
             <svg viewBox="0 0 20 20" width="18" height="18">
-              <path d="M4 5h12M4 10h12M4 15h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+              <path
+                d="M4 5h12M4 10h12M4 15h8"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                fill="none"
+              />
             </svg>
           </span>
           Carte
@@ -57,7 +63,12 @@ export function MobileDock({ phone, directions, cta }: Props) {
         <a href={directions} className={styles.item} target="_blank" rel="noopener noreferrer">
           <span className={styles.icon} aria-hidden="true">
             <svg viewBox="0 0 20 20" width="18" height="18">
-              <path d="M10 18s5.5-5.2 5.5-9.5a5.5 5.5 0 1 0-11 0C4.5 12.8 10 18 10 18z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+              <path
+                d="M10 18s5.5-5.2 5.5-9.5a5.5 5.5 0 1 0-11 0C4.5 12.8 10 18 10 18z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                fill="none"
+              />
               <circle cx="10" cy="8.5" r="2" fill="currentColor" />
             </svg>
           </span>

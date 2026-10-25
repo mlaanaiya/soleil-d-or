@@ -72,7 +72,12 @@ export function MediaPicker({ name, kind, label, help, value, library }: Props) 
           <button type="button" className="adm-btn adm-btn--small" onClick={() => setOpen(true)}>
             Choisir…
           </button>
-          <button type="button" className="adm-btn adm-btn--small" onClick={() => input.current?.click()} disabled={busy}>
+          <button
+            type="button"
+            className="adm-btn adm-btn--small"
+            onClick={() => input.current?.click()}
+            disabled={busy}
+          >
             {busy ? 'Envoi…' : 'Envoyer une image'}
           </button>
           {selected && (
@@ -95,7 +100,13 @@ export function MediaPicker({ name, kind, label, help, value, library }: Props) 
       {error && <p className="adm-error">{error}</p>}
 
       {open && (
-        <div className="adm-modal" role="dialog" aria-modal="true" aria-label={label} onClick={(e) => e.target === e.currentTarget && setOpen(false)}>
+        <div
+          className="adm-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label={label}
+          onClick={(e) => e.target === e.currentTarget && setOpen(false)}
+        >
           <div className="adm-modal-card">
             <div className="adm-modal-head">
               <h2>{label}</h2>

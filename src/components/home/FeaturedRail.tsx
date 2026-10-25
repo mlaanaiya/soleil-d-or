@@ -41,32 +41,32 @@ export function FeaturedRail({ title, intro, products }: { title: string; intro:
   return (
     // Stable React-owned wrapper: GSAP inserts its pin-spacer inside it, never in <main>.
     <div>
-    <section ref={root} className={styles.rail} aria-labelledby="featured-title">
-      <div className={styles.track}>
-        <header className={styles.head}>
-          <p className="eyebrow">
-            <span className="sun-text">(02)</span> La sélection
-          </p>
-          <h2 id="featured-title" className={styles.title}>
-            {title}
-          </h2>
-          <p className={styles.intro}>{intro}</p>
-          <Link href="/carte" className="btn btn--ghost">
-            Toute la carte
-          </Link>
-          <div className={styles.progress} aria-hidden="true">
-            <span />
-          </div>
-        </header>
-        <ul className={styles.list}>
-          {products.map((p, i) => (
-            <li key={p.slug} className={styles.item}>
-              <ProductTile product={p} index={i} sizes="(max-width: 760px) 78vw, 26vw" />
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
+      <section ref={root} className={styles.rail} aria-labelledby="featured-title">
+        <div className={styles.track}>
+          <header className={styles.head}>
+            <p className="eyebrow">
+              <span className="sun-text">(02)</span> La sélection
+            </p>
+            <h2 id="featured-title" className={styles.title}>
+              {title}
+            </h2>
+            <p className={styles.intro}>{intro}</p>
+            <Link href="/carte" className="btn btn--ghost">
+              Toute la carte
+            </Link>
+            <div className={styles.progress} aria-hidden="true">
+              <span />
+            </div>
+          </header>
+          <ul className={styles.list}>
+            {products.map((p, i) => (
+              <li key={p.slug} className={styles.item}>
+                <ProductTile product={p} index={i} sizes="(max-width: 760px) 78vw, 26vw" />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
     </div>
   )
 }

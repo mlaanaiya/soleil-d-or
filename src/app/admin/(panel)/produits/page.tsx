@@ -7,7 +7,6 @@ import { listCategories, listProducts } from '@/lib/server/catalog'
 
 export const metadata: Metadata = { title: 'Produits & prix' }
 
-
 export default async function ProductsAdmin(props: PageProps<'/admin/produits'>) {
   const { sansprix, supprime } = await props.searchParams
   const products = listProducts()
@@ -40,15 +39,19 @@ export default async function ProductsAdmin(props: PageProps<'/admin/produits'>)
         <div>
           <h1 className="adm-title">Produits & prix</h1>
           <p className="adm-sub">
-            Modifiez un prix directement dans la liste puis cliquez sur « Enregistrer le prix ». Pour les photos, la description
-            ou la catégorie, ouvrez la fiche du produit.
+            Modifiez un prix directement dans la liste puis cliquez sur « Enregistrer le prix ». Pour les photos, la
+            description ou la catégorie, ouvrez la fiche du produit.
           </p>
         </div>
         <Link href="/admin/produits/nouveau" className="adm-btn adm-btn--primary">
           + Nouveau produit
         </Link>
       </header>
-      {supprime && <p className="adm-success" style={{ marginBottom: 16 }}>Produit supprimé.</p>}
+      {supprime && (
+        <p className="adm-success" style={{ marginBottom: 16 }}>
+          Produit supprimé.
+        </p>
+      )}
       <ProductRows groups={groups} onlyMissing={sansprix === '1'} />
     </>
   )

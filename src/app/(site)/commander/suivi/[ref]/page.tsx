@@ -23,7 +23,12 @@ export default async function OrderTracking(props: PageProps<'/commander/suivi/[
 
   return (
     <>
-      <PageHero eyebrow="Commande envoyée" title="Merci !" accent="à tout à l’heure" intro="Conservez cette page : elle se met à jour toute seule." />
+      <PageHero
+        eyebrow="Commande envoyée"
+        title="Merci !"
+        accent="à tout à l’heure"
+        intro="Conservez cette page : elle se met à jour toute seule."
+      />
       <div className={`container ${styles.track}`}>
         <AutoRefresh seconds={order.status === 'done' || order.status === 'cancelled' ? 0 : 20} />
         <div>
@@ -58,9 +63,12 @@ export default async function OrderTracking(props: PageProps<'/commander/suivi/[
             <div>
               <dt>Retrait</dt>
               <dd>
-                {new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
-                  new Date(`${date}T12:00:00Z`),
-                )}{' '}
+                {new Intl.DateTimeFormat('fr-FR', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  timeZone: 'UTC',
+                }).format(new Date(`${date}T12:00:00Z`))}{' '}
                 à {time}
               </dd>
             </div>

@@ -19,7 +19,14 @@ describe('prices', () => {
   it('labels a starting price when several formulas exist', () => {
     expect(fromPrice([])).toBeNull()
     expect(priceLabel({ prices: [] })).toBeNull()
-    expect(priceLabel({ prices: [{ label: 'Menu', cents: 1100 }, { label: 'Seul', cents: 850 }] })?.replace(/\s/g, ' ')).toBe('dès 8,50 €')
+    expect(
+      priceLabel({
+        prices: [
+          { label: 'Menu', cents: 1100 },
+          { label: 'Seul', cents: 850 },
+        ],
+      })?.replace(/\s/g, ' '),
+    ).toBe('dès 8,50 €')
   })
 })
 
@@ -30,7 +37,9 @@ describe('text helpers', () => {
   })
   it('builds phone links and addresses', () => {
     expect(telHref('01 23 45 67 89')).toBe('tel:0123456789')
-    expect(fullAddress({ street: '1 rue du Soleil', postalCode: '75000', city: 'Paris' })).toBe('1 rue du Soleil, 75000 Paris')
+    expect(fullAddress({ street: '1 rue du Soleil', postalCode: '75000', city: 'Paris' })).toBe(
+      '1 rue du Soleil, 75000 Paris',
+    )
     expect(fullAddress({ street: '', postalCode: '', city: '' })).toBe('')
   })
 })

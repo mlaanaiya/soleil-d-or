@@ -20,7 +20,15 @@ function folderSize(id: string): string {
 
 function toAdmin(m: Media): AdminMedia {
   const w = m.widths.find((x) => x >= 400) ?? m.widths.at(-1)
-  return { id: m.id, url: `/media/${m.id}/${w}.webp`, alt: m.alt, kind: m.kind, inGallery: m.inGallery, usage: mediaUsage(m.id), size: folderSize(m.id) }
+  return {
+    id: m.id,
+    url: `/media/${m.id}/${w}.webp`,
+    alt: m.alt,
+    kind: m.kind,
+    inGallery: m.inGallery,
+    usage: mediaUsage(m.id),
+    size: folderSize(m.id),
+  }
 }
 
 export default async function PhotosAdmin() {

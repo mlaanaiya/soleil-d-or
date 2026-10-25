@@ -54,12 +54,31 @@ export function restaurantJsonLd(site: SiteContext, menu: CategoryWithProducts[]
   const base = siteUrl()
   const { restaurant, hours, services, content } = site
   const opening = DAYS.flatMap((d) =>
-    hours.week[d].map((s) => ({ '@type': 'OpeningHoursSpecification', dayOfWeek: SCHEMA_DAYS[d], opens: s.open, closes: s.close })),
+    hours.week[d].map((s) => ({
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: SCHEMA_DAYS[d],
+      opens: s.open,
+      closes: s.close,
+    })),
   )
   const special = hours.exceptions.flatMap((e) =>
     e.slots.length === 0
-      ? [{ '@type': 'OpeningHoursSpecification', validFrom: e.date, validThrough: e.date, opens: '00:00', closes: '00:00' }]
-      : e.slots.map((s) => ({ '@type': 'OpeningHoursSpecification', validFrom: e.date, validThrough: e.date, opens: s.open, closes: s.close })),
+      ? [
+          {
+            '@type': 'OpeningHoursSpecification',
+            validFrom: e.date,
+            validThrough: e.date,
+            opens: '00:00',
+            closes: '00:00',
+          },
+        ]
+      : e.slots.map((s) => ({
+          '@type': 'OpeningHoursSpecification',
+          validFrom: e.date,
+          validThrough: e.date,
+          opens: s.open,
+          closes: s.close,
+        })),
   )
   return {
     '@context': 'https://schema.org',

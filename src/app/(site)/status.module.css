@@ -26,7 +26,13 @@
   position: absolute;
   inset: -30%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, transparent 66%, rgb(255 176 0 / 0.45) 72%, rgb(255 140 0 / 0.12) 85%, transparent);
+  background: radial-gradient(
+    closest-side,
+    transparent 66%,
+    rgb(255 176 0 / 0.45) 72%,
+    rgb(255 140 0 / 0.12) 85%,
+    transparent
+  );
   z-index: -1;
 }
 .title {

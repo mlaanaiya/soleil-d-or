@@ -14,7 +14,9 @@ export function PurgeButton() {
   return (
     <section className="adm-card" style={{ marginTop: 24 }}>
       <h2>Données personnelles</h2>
-      <p className="adm-card-sub">Supprimez les commandes terminées et les réservations passées de plus de 90 jours (bonne pratique RGPD).</p>
+      <p className="adm-card-sub">
+        Supprimez les commandes terminées et les réservations passées de plus de 90 jours (bonne pratique RGPD).
+      </p>
       <button
         type="button"
         className="adm-btn adm-btn--danger"

@@ -7,7 +7,15 @@ import type { ActionState } from '@/lib/action-state'
 import { uploadFiles } from './MediaPicker'
 import { Toast } from './Toast'
 
-export type AdminMedia = { id: string; url: string; alt: string; kind: 'photo' | 'cutout'; inGallery: boolean; usage: number; size: string }
+export type AdminMedia = {
+  id: string
+  url: string
+  alt: string
+  kind: 'photo' | 'cutout'
+  inGallery: boolean
+  usage: number
+  size: string
+}
 
 function Dropzone({ kind, onDone }: { kind: 'photo' | 'cutout'; onDone: (s: ActionState) => void }) {
   const [over, setOver] = useState(false)
@@ -38,7 +46,13 @@ function Dropzone({ kind, onDone }: { kind: 'photo' | 'cutout'; onDone: (s: Acti
         void send(e.dataTransfer.files)
       }}
     >
-      <strong>{busy ? 'Import en cours… (quelques secondes par photo)' : kind === 'photo' ? 'Déposez vos photos ici' : 'Déposez vos détourages ici'}</strong>
+      <strong>
+        {busy
+          ? 'Import en cours… (quelques secondes par photo)'
+          : kind === 'photo'
+            ? 'Déposez vos photos ici'
+            : 'Déposez vos détourages ici'}
+      </strong>
       <small>
         {kind === 'photo'
           ? 'ou cliquez pour choisir · JPEG, PNG, WebP, AVIF · 15 Mo max · idéalement 2000 px de large ou plus'
@@ -91,7 +105,12 @@ export function MediaLibrary({ photos, cutouts }: { photos: AdminMedia[]; cutout
       />
       {m.kind === 'photo' && (
         <label className="adm-switch">
-          <input type="checkbox" checked={m.inGallery} disabled={pending} onChange={(e) => run(() => editMedia(m.id, { inGallery: e.target.checked }))} />
+          <input
+            type="checkbox"
+            checked={m.inGallery}
+            disabled={pending}
+            onChange={(e) => run(() => editMedia(m.id, { inGallery: e.target.checked }))}
+          />
           Dans la galerie
         </label>
       )}
@@ -116,7 +135,9 @@ export function MediaLibrary({ photos, cutouts }: { photos: AdminMedia[]; cutout
     <>
       <section className="adm-card">
         <h2>Ordre de la galerie</h2>
-        <p className="adm-card-sub">Les photos cochées « Dans la galerie » apparaissent sur la page Galerie et l’accueil, dans cet ordre.</p>
+        <p className="adm-card-sub">
+          Les photos cochées « Dans la galerie » apparaissent sur la page Galerie et l’accueil, dans cet ordre.
+        </p>
         {gallery.length === 0 ? (
           <p className="adm-empty">Aucune photo dans la galerie.</p>
         ) : (
@@ -130,10 +151,22 @@ export function MediaLibrary({ photos, cutouts }: { photos: AdminMedia[]; cutout
                 <div className="adm-row" style={{ justifyContent: 'space-between' }}>
                   <strong>{i + 1}</strong>
                   <div>
-                    <button type="button" className="adm-icon-btn" disabled={i === 0 || pending} onClick={() => run(() => moveInGallery(m.id, -1))} aria-label="Avancer">
+                    <button
+                      type="button"
+                      className="adm-icon-btn"
+                      disabled={i === 0 || pending}
+                      onClick={() => run(() => moveInGallery(m.id, -1))}
+                      aria-label="Avancer"
+                    >
                       ←
                     </button>
-                    <button type="button" className="adm-icon-btn" disabled={i === gallery.length - 1 || pending} onClick={() => run(() => moveInGallery(m.id, 1))} aria-label="Reculer">
+                    <button
+                      type="button"
+                      className="adm-icon-btn"
+                      disabled={i === gallery.length - 1 || pending}
+                      onClick={() => run(() => moveInGallery(m.id, 1))}
+                      aria-label="Reculer"
+                    >
                       →
                     </button>
                   </div>
@@ -146,7 +179,9 @@ export function MediaLibrary({ photos, cutouts }: { photos: AdminMedia[]; cutout
 
       <section className="adm-card">
         <h2>Photos ({photos.length})</h2>
-        <p className="adm-card-sub">Chaque photo est automatiquement optimisée (formats AVIF et WebP, plusieurs tailles).</p>
+        <p className="adm-card-sub">
+          Chaque photo est automatiquement optimisée (formats AVIF et WebP, plusieurs tailles).
+        </p>
         <Dropzone kind="photo" onDone={done} />
         <div className="adm-media-grid" style={{ marginTop: 16 }}>
           {photos.map(card)}
@@ -155,7 +190,9 @@ export function MediaLibrary({ photos, cutouts }: { photos: AdminMedia[]; cutout
 
       <section className="adm-card">
         <h2>Détourages ({cutouts.length})</h2>
-        <p className="adm-card-sub">Images sans fond, utilisées pour les mises en scène (ouverture de l’accueil, fiches produits).</p>
+        <p className="adm-card-sub">
+          Images sans fond, utilisées pour les mises en scène (ouverture de l’accueil, fiches produits).
+        </p>
         <Dropzone kind="cutout" onDone={done} />
         <div className="adm-media-grid" style={{ marginTop: 16 }}>
           {cutouts.map(card)}

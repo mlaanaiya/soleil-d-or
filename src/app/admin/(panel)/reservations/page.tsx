@@ -31,7 +31,11 @@ export default async function ReservationsAdmin(props: PageProps<'/admin/reserva
       <header className="adm-page-head">
         <div>
           <h1 className="adm-title">Réservations</h1>
-          <p className="adm-sub">{enabled ? 'Confirmez ou refusez les demandes : le client voit la réponse sur sa page de suivi.' : 'La réservation en ligne est désactivée (Informations & services).'}</p>
+          <p className="adm-sub">
+            {enabled
+              ? 'Confirmez ou refusez les demandes : le client voit la réponse sur sa page de suivi.'
+              : 'La réservation en ligne est désactivée (Informations & services).'}
+          </p>
         </div>
       </header>
       <nav className="adm-tabs" aria-label="Vue">

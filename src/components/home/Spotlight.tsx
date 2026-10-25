@@ -36,8 +36,12 @@ export function Spotlight({ title, text, products }: { title: string; text: stri
         .fromTo(`.${styles.titleWord}`, { scale: 1 }, { scale: 0.62, yPercent: -60, duration: 1 }, 0)
         .fromTo(`.${styles.panel}`, { autoAlpha: 0, y: 60 }, { autoAlpha: 1, y: 0, duration: 0.4 }, 0.7)
       frames.slice(1).forEach((frame, i) => {
-        tl.fromTo(frame, { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 0.8 }, 1.3 + i)
-          .fromTo(frame.querySelector('img'), { scale: 1.25 }, { scale: 1, duration: 0.8 }, '<')
+        tl.fromTo(
+          frame,
+          { clipPath: 'inset(100% 0 0 0)' },
+          { clipPath: 'inset(0% 0 0 0)', duration: 0.8 },
+          1.3 + i,
+        ).fromTo(frame.querySelector('img'), { scale: 1.25 }, { scale: 1, duration: 0.8 }, '<')
       })
       tl.to({}, { duration: 0.4 })
     })
@@ -49,37 +53,37 @@ export function Spotlight({ title, text, products }: { title: string; text: stri
   return (
     // Stable React-owned wrapper: GSAP inserts its pin-spacer inside it, never in <main>.
     <div>
-    <section ref={root} className={styles.spotlight} aria-labelledby="spotlight-title">
-      <div className={styles.frames}>
-        {shots.map((p, i) => (
-          <div key={p.slug} className={styles.frame} style={{ zIndex: i }}>
-            <SunlitPicture media={p.photo!} sizes="100vw" className={styles.photo} alt={p.photo!.alt} />
-          </div>
-        ))}
-        <div className={styles.shade} aria-hidden="true" />
-      </div>
-
-      <h2 id="spotlight-title" className={styles.title}>
-        <span className={styles.titleWord}>{title}</span>
-      </h2>
-
-      <div className={styles.panel}>
-        <p className="eyebrow">
-          <span className="sun-text">(04)</span> À la une
-        </p>
-        <p className={styles.text}>{text}</p>
-        <ul className={styles.links}>
-          {products.map((p) => (
-            <li key={p.slug}>
-              <Link href={`/carte/${p.slug}`} className={styles.link}>
-                <span>{p.name}</span>
-                <span className={styles.linkMeta}>{p.price ?? p.category}</span>
-              </Link>
-            </li>
+      <section ref={root} className={styles.spotlight} aria-labelledby="spotlight-title">
+        <div className={styles.frames}>
+          {shots.map((p, i) => (
+            <div key={p.slug} className={styles.frame} style={{ zIndex: i }}>
+              <SunlitPicture media={p.photo!} sizes="100vw" className={styles.photo} alt={p.photo!.alt} />
+            </div>
           ))}
-        </ul>
-      </div>
-    </section>
+          <div className={styles.shade} aria-hidden="true" />
+        </div>
+
+        <h2 id="spotlight-title" className={styles.title}>
+          <span className={styles.titleWord}>{title}</span>
+        </h2>
+
+        <div className={styles.panel}>
+          <p className="eyebrow">
+            <span className="sun-text">(04)</span> À la une
+          </p>
+          <p className={styles.text}>{text}</p>
+          <ul className={styles.links}>
+            {products.map((p) => (
+              <li key={p.slug}>
+                <Link href={`/carte/${p.slug}`} className={styles.link}>
+                  <span>{p.name}</span>
+                  <span className={styles.linkMeta}>{p.price ?? p.category}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
     </div>
   )
 }

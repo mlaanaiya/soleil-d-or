@@ -106,8 +106,21 @@ describe('reservationSlots', () => {
 describe('groupedWeek', () => {
   it('merges consecutive identical days', () => {
     const hours = hoursSchema.parse({
-      week: { mon: [{ open: '11:00', close: '22:00' }], tue: [{ open: '11:00', close: '22:00' }], wed: [{ open: '11:00', close: '22:00' }] },
+      week: {
+        mon: [{ open: '11:00', close: '22:00' }],
+        tue: [{ open: '11:00', close: '22:00' }],
+        wed: [{ open: '11:00', close: '22:00' }],
+      },
     })
     expect(groupedWeek(hours).map((g) => g.days)).toEqual(['Lundi – Mercredi', 'Jeudi – Dimanche'])
+  })
+})
+
+describe('24-hour service', () => {
+  it('is displayed as 24 h/24 and reported as open all day', () => {
+    const hours = hoursSchema.parse({ week: { mon: [{ open: '00:00', close: '00:00' }] } })
+    expect(groupedWeek(hours)[0]!.slots).toHaveLength(1)
+    const status = getOpenStatus(hours, paris('2026-10-26', '15:00'))
+    expect(describeStatus(status)).toBe('Ouvert 24 h/24')
   })
 })

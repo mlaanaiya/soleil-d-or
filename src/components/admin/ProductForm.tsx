@@ -83,7 +83,11 @@ export function ProductForm({ values, categories, photos, cutouts }: Props) {
 
           <div className="adm-field">
             <span>
-              Prix <small>— un seul prix, ou plusieurs formules (ex. « Seul », « Menu »). Laissez vide si le prix n’est pas encore fixé.</small>
+              Prix{' '}
+              <small>
+                — un seul prix, ou plusieurs formules (ex. « Seul », « Menu »). Laissez vide si le prix n’est pas encore
+                fixé.
+              </small>
             </span>
             <div className="adm-prices">
               {prices.map((p, i) => (
@@ -102,19 +106,31 @@ export function ProductForm({ values, categories, photos, cutouts }: Props) {
                     inputMode="decimal"
                     placeholder="0,00"
                     value={p.amount}
-                    onChange={(e) => setPrices((r) => r.map((x, j) => (j === i ? { ...x, amount: e.target.value } : x)))}
+                    onChange={(e) =>
+                      setPrices((r) => r.map((x, j) => (j === i ? { ...x, amount: e.target.value } : x)))
+                    }
                     aria-label={`Montant du prix ${i + 1} en euros`}
                   />
                   <span className="adm-euro">€</span>
                   {prices.length > 1 && (
-                    <button type="button" className="adm-icon-btn" onClick={() => setPrices((r) => r.filter((_, j) => j !== i))} aria-label="Retirer ce prix">
+                    <button
+                      type="button"
+                      className="adm-icon-btn"
+                      onClick={() => setPrices((r) => r.filter((_, j) => j !== i))}
+                      aria-label="Retirer ce prix"
+                    >
                       ✕
                     </button>
                   )}
                 </div>
               ))}
               <div>
-                <button type="button" className="adm-btn adm-btn--small" onClick={() => setPrices((r) => [...r, { label: '', amount: '' }])} disabled={prices.length >= 6}>
+                <button
+                  type="button"
+                  className="adm-btn adm-btn--small"
+                  onClick={() => setPrices((r) => [...r, { label: '', amount: '' }])}
+                  disabled={prices.length >= 6}
+                >
                   + Ajouter une formule
                 </button>
               </div>
@@ -125,10 +141,27 @@ export function ProductForm({ values, categories, photos, cutouts }: Props) {
 
       <section className="adm-card">
         <h2>Photos</h2>
-        <p className="adm-card-sub">La photo apparaît sur la carte et la galerie ; le détourage (PNG transparent) sert aux mises en scène sur fond de soleil.</p>
+        <p className="adm-card-sub">
+          La photo apparaît sur la carte et la galerie ; le détourage (PNG transparent) sert aux mises en scène sur fond
+          de soleil.
+        </p>
         <div className="adm-grid-2">
-          <MediaPicker name="photoMediaId" kind="photo" label="Photo" help="JPEG, PNG, WebP" value={values.photoMediaId} library={photos} />
-          <MediaPicker name="cutoutMediaId" kind="cutout" label="Détourage" help="facultatif — PNG/WebP transparent" value={values.cutoutMediaId} library={cutouts} />
+          <MediaPicker
+            name="photoMediaId"
+            kind="photo"
+            label="Photo"
+            help="JPEG, PNG, WebP"
+            value={values.photoMediaId}
+            library={photos}
+          />
+          <MediaPicker
+            name="cutoutMediaId"
+            kind="cutout"
+            label="Détourage"
+            help="facultatif — PNG/WebP transparent"
+            value={values.cutoutMediaId}
+            library={cutouts}
+          />
         </div>
       </section>
 

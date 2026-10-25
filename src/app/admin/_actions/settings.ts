@@ -118,7 +118,12 @@ export async function geocode(address: string): Promise<GeocodeResult> {
     if (!res.ok) return { ok: false, error: 'Service de localisation indisponible, réessayez plus tard.' }
     const [hit] = (await res.json()) as Array<{ lat: string; lon: string; display_name: string }>
     if (!hit) return { ok: false, error: 'Adresse introuvable. Vérifiez-la ou saisissez les coordonnées.' }
-    return { ok: true, lat: Number(Number(hit.lat).toFixed(6)), lng: Number(Number(hit.lon).toFixed(6)), label: hit.display_name }
+    return {
+      ok: true,
+      lat: Number(Number(hit.lat).toFixed(6)),
+      lng: Number(Number(hit.lon).toFixed(6)),
+      label: hit.display_name,
+    }
   } catch {
     return { ok: false, error: 'Service de localisation injoignable.' }
   }

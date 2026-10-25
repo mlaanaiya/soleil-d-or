@@ -3,12 +3,12 @@ import { MapFacade } from '@/components/contact/MapFacade'
 import styles from '@/components/contact/Contact.module.css'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { PageHero } from '@/components/site/PageHero'
-import { addDays, dayOf, exceptionFor, formatTimeFr, zonedNow } from '@/lib/hours'
+import { addDays, dayOf, exceptionFor, formatSlots, zonedNow } from '@/lib/hours'
 import { telHref } from '@/lib/format'
 import { getMenu } from '@/lib/server/catalog'
 import { loadSite } from '@/lib/server/public'
 import { restaurantJsonLd } from '@/lib/server/structured'
-import { DAYS, DAY_LABELS, type Slot } from '@/lib/schemas'
+import { DAYS, DAY_LABELS } from '@/lib/schemas'
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await loadSite()
@@ -19,9 +19,6 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: { canonical: '/contact' },
   }
 }
-
-const slotsText = (slots: Slot[]) =>
-  slots.length === 0 ? 'Fermé' : slots.map((s) => `${formatTimeFr(s.open)} – ${formatTimeFr(s.close)}`).join(' · ')
 
 export default async function ContactPage() {
   const site = await loadSite()
@@ -128,7 +125,9 @@ export default async function ContactPage() {
                     {DAY_LABELS[d]}
                     {d === todayKey && <span className={styles.todayTag}>Aujourd’hui</span>}
                   </dt>
-                  <dd>{d === todayKey && todayException ? slotsText(todayException.slots) : slotsText(hours.week[d])}</dd>
+                  <dd>
+                    {d === todayKey && todayException ? formatSlots(todayException.slots) : formatSlots(hours.week[d])}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -142,12 +141,15 @@ export default async function ContactPage() {
                 {upcoming.map((e) => (
                   <li key={e.date}>
                     <span>
-                      {new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
-                        new Date(`${e.date}T12:00:00Z`),
-                      )}
+                      {new Intl.DateTimeFormat('fr-FR', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        timeZone: 'UTC',
+                      }).format(new Date(`${e.date}T12:00:00Z`))}
                       {e.label && ` — ${e.label}`}
                     </span>
-                    <strong>{slotsText(e.slots)}</strong>
+                    <strong>{formatSlots(e.slots)}</strong>
                   </li>
                 ))}
               </ul>

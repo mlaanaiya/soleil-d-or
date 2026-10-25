@@ -31,7 +31,9 @@ export function RestaurantForm({ initial }: { initial: Restaurant }) {
     <form ref={form} onSubmit={onSubmit} className="adm-card adm-form">
       <div>
         <h2>Coordonnées</h2>
-        <p className="adm-card-sub">Affichées dans le pied de page, la page Contact et transmises à Google (données structurées).</p>
+        <p className="adm-card-sub">
+          Affichées dans le pied de page, la page Contact et transmises à Google (données structurées).
+        </p>
       </div>
       <label className="adm-field">
         <span>Nom du restaurant</span>
@@ -56,11 +58,23 @@ export function RestaurantForm({ initial }: { initial: Restaurant }) {
           <span>
             Latitude <small>— pour le plan et les itinéraires</small>
           </span>
-          <input name="lat" inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="ex. 48.8566" />
+          <input
+            name="lat"
+            inputMode="decimal"
+            value={lat}
+            onChange={(e) => setLat(e.target.value)}
+            placeholder="ex. 48.8566"
+          />
         </label>
         <label className="adm-field">
           <span>Longitude</span>
-          <input name="lng" inputMode="decimal" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="ex. 2.3522" />
+          <input
+            name="lng"
+            inputMode="decimal"
+            value={lng}
+            onChange={(e) => setLng(e.target.value)}
+            placeholder="ex. 2.3522"
+          />
         </label>
         <button type="button" className="adm-btn" onClick={locate} disabled={locating}>
           {locating ? 'Recherche…' : 'Trouver depuis l’adresse'}
@@ -81,7 +95,9 @@ export function RestaurantForm({ initial }: { initial: Restaurant }) {
       </div>
       <div>
         <h2 style={{ marginTop: 8 }}>Réseaux sociaux</h2>
-        <p className="adm-card-sub">Collez l’adresse complète de vos pages (https://…). Seuls les liens renseignés apparaissent.</p>
+        <p className="adm-card-sub">
+          Collez l’adresse complète de vos pages (https://…). Seuls les liens renseignés apparaissent.
+        </p>
       </div>
       <div className="adm-grid-2">
         {(['instagram', 'facebook', 'tiktok', 'snapchat', 'google'] as const).map((k) => (
@@ -111,7 +127,9 @@ export function ServicesForm({ initial }: { initial: Services }) {
     <form onSubmit={onSubmit} className="adm-card adm-form" id="services">
       <div>
         <h2>Services</h2>
-        <p className="adm-card-sub">N’activez que ce qui est réellement proposé : le site n’affiche jamais un service désactivé.</p>
+        <p className="adm-card-sub">
+          N’activez que ce qui est réellement proposé : le site n’affiche jamais un service désactivé.
+        </p>
       </div>
       <div className="adm-grid-3">
         <label className="adm-switch">
@@ -139,13 +157,22 @@ export function ServicesForm({ initial }: { initial: Services }) {
             <span>Lien</span>
             <input name="linkUrl" type="url" defaultValue={l.url} maxLength={500} placeholder="https://" />
           </label>
-          <button type="button" className="adm-btn adm-btn--danger" onClick={() => setLinks((x) => x.filter((y) => y.id !== l.id))}>
+          <button
+            type="button"
+            className="adm-btn adm-btn--danger"
+            onClick={() => setLinks((x) => x.filter((y) => y.id !== l.id))}
+          >
             Retirer
           </button>
         </div>
       ))}
       <div>
-        <button type="button" className="adm-btn adm-btn--small" disabled={links.length >= 6} onClick={() => setLinks((x) => [...x, { label: '', url: '', id: Math.max(-1, ...x.map((y) => y.id)) + 1 }])}>
+        <button
+          type="button"
+          className="adm-btn adm-btn--small"
+          disabled={links.length >= 6}
+          onClick={() => setLinks((x) => [...x, { label: '', url: '', id: Math.max(-1, ...x.map((y) => y.id)) + 1 }])}
+        >
           + Ajouter une plateforme
         </button>
       </div>
@@ -153,15 +180,22 @@ export function ServicesForm({ initial }: { initial: Services }) {
       <div>
         <h2 style={{ marginTop: 8 }}>Commande en ligne (click & collect)</h2>
         <p className="adm-card-sub">
-          Les clients commandent sur le site et paient au retrait. Les commandes arrivent dans « Commandes » : gardez cette page
-          ouverte pendant le service (alerte sonore à chaque nouvelle commande).
+          Les clients commandent sur le site et paient au retrait. Les commandes arrivent dans « Commandes » : gardez
+          cette page ouverte pendant le service (alerte sonore à chaque nouvelle commande).
         </p>
       </div>
       <label className="adm-switch">
-        <input type="checkbox" name="orderingEnabled" checked={ordering} onChange={(e) => setOrdering(e.target.checked)} />
+        <input
+          type="checkbox"
+          name="orderingEnabled"
+          checked={ordering}
+          onChange={(e) => setOrdering(e.target.checked)}
+        />
         <span>
           Activer la commande en ligne
-          <small>Seuls les produits disponibles et ayant un prix sont commandables, pendant les heures d’ouverture.</small>
+          <small>
+            Seuls les produits disponibles et ayant un prix sont commandables, pendant les heures d’ouverture.
+          </small>
         </span>
       </label>
       <div className="adm-row" hidden={!ordering}>
@@ -181,7 +215,10 @@ export function ServicesForm({ initial }: { initial: Services }) {
 
       <div>
         <h2 style={{ marginTop: 8 }}>Réservation de table</h2>
-        <p className="adm-card-sub">Les demandes arrivent dans « Réservations » ; vous les confirmez ou refusez, le client voit la réponse sur sa page de suivi.</p>
+        <p className="adm-card-sub">
+          Les demandes arrivent dans « Réservations » ; vous les confirmez ou refusez, le client voit la réponse sur sa
+          page de suivi.
+        </p>
       </div>
       <label className="adm-switch">
         <input type="checkbox" name="reservationsEnabled" checked={resa} onChange={(e) => setResa(e.target.checked)} />
@@ -194,11 +231,23 @@ export function ServicesForm({ initial }: { initial: Services }) {
         </label>
         <label className="adm-field">
           <span>Intervalle (min)</span>
-          <input name="resaSlotMinutes" type="number" min={10} max={120} defaultValue={initial.reservations.slotMinutes} />
+          <input
+            name="resaSlotMinutes"
+            type="number"
+            min={10}
+            max={120}
+            defaultValue={initial.reservations.slotMinutes}
+          />
         </label>
         <label className="adm-field">
           <span>Délai minimum (min)</span>
-          <input name="resaLeadMinutes" type="number" min={0} max={2880} defaultValue={initial.reservations.leadMinutes} />
+          <input
+            name="resaLeadMinutes"
+            type="number"
+            min={0}
+            max={2880}
+            defaultValue={initial.reservations.leadMinutes}
+          />
         </label>
         <label className="adm-field">
           <span>Jours à l’avance (max)</span>

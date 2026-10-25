@@ -18,7 +18,12 @@ export default async function GaleriePage() {
   const shots = getGalleryShots()
   return (
     <>
-      <PageHero eyebrow="Photographies" title={site.content.galleryTitle} accent="en pleine lumière" intro={site.content.galleryIntro} />
+      <PageHero
+        eyebrow="Photographies"
+        title={site.content.galleryTitle}
+        accent="en pleine lumière"
+        intro={site.content.galleryIntro}
+      />
       <div className="container">
         {shots.length > 0 ? (
           <GalleryWall shots={shots} />

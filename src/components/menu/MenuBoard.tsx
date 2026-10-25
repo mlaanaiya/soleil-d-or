@@ -18,11 +18,7 @@ export type MenuCategory = {
 type View = 'photos' | 'liste'
 const VIEW_KEY = 'sdo:menu-view'
 
-const normalize = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
+const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 function PriceTag({ product }: { product: ProductSummary }) {
   if (product.prices.length === 0) return <span className={styles.priceMissing}>Prix sur place</span>
@@ -146,12 +142,12 @@ export function MenuBoard({ categories }: { categories: MenuCategory[] }) {
 
   // Track the category currently under the toolbar.
   useEffect(() => {
-    const sections = filtered
-      .map((c) => document.getElementById(c.slug))
-      .filter((el): el is HTMLElement => Boolean(el))
+    const sections = filtered.map((c) => document.getElementById(c.slug)).filter((el): el is HTMLElement => Boolean(el))
     const io = new IntersectionObserver(
       (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
         if (visible[0]) setActive(visible[0].target.id)
       },
       { rootMargin: '-30% 0px -60% 0px' },

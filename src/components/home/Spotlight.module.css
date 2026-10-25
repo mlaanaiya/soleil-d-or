@@ -121,6 +121,15 @@
   }
 }
 
+/* Portrait screens: landscape photos are shown whole (their charcoal backdrop melts into the page)
+   instead of being cropped and enlarged. */
+@media (max-aspect-ratio: 4 / 5) {
+  .photo img {
+    object-fit: contain;
+    object-position: 50% 42%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .frame:not(:first-child) {
     display: none;

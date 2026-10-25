@@ -37,7 +37,14 @@ export function ProductStage({ cutout, photo, name }: { cutout: Media | null; ph
         <div className={styles.rays} aria-hidden="true" />
         <div className={styles.sun} aria-hidden="true" />
         <div className={styles.float}>
-          <Picture media={cutout} bare priority sizes="(max-width: 960px) 90vw, 50vw" alt={name} imgClassName={styles.cutout} />
+          <Picture
+            media={cutout}
+            bare
+            priority
+            sizes="(max-width: 960px) 90vw, 50vw"
+            alt={name}
+            imgClassName={styles.cutout}
+          />
         </div>
         <div className={styles.shadow} aria-hidden="true" />
       </div>
@@ -46,7 +53,13 @@ export function ProductStage({ cutout, photo, name }: { cutout: Media | null; ph
   if (photo) {
     return (
       <div className={styles.photoStage}>
-        <SunlitPicture media={photo} priority sizes="(max-width: 960px) 100vw, 50vw" alt={photo.alt || name} className={styles.photo} />
+        <SunlitPicture
+          media={photo}
+          priority
+          sizes="(max-width: 960px) 100vw, 50vw"
+          alt={photo.alt || name}
+          className={styles.photo}
+        />
       </div>
     )
   }

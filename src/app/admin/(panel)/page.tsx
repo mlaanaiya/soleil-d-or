@@ -17,8 +17,16 @@ export default async function Dashboard() {
   const status = getOpenStatus(hours)
 
   const checklist = [
-    { done: Boolean(restaurant.street && restaurant.city), label: 'Adresse du restaurant', href: '/admin/informations' },
-    { done: restaurant.lat !== null && restaurant.lng !== null, label: 'Position sur la carte (plan d’accès, itinéraires)', href: '/admin/informations' },
+    {
+      done: Boolean(restaurant.street && restaurant.city),
+      label: 'Adresse du restaurant',
+      href: '/admin/informations',
+    },
+    {
+      done: restaurant.lat !== null && restaurant.lng !== null,
+      label: 'Position sur la carte (plan d’accès, itinéraires)',
+      href: '/admin/informations',
+    },
     { done: Boolean(restaurant.phone), label: 'Numéro de téléphone', href: '/admin/informations' },
     { done: hasHours(hours), label: 'Horaires d’ouverture', href: '/admin/horaires' },
     {
@@ -27,9 +35,17 @@ export default async function Dashboard() {
       href: '/admin/produits?sansprix=1',
       hint: withoutPrice > 0 ? `${withoutPrice} sans prix` : undefined,
     },
-    { done: Object.values(restaurant.socials).some(Boolean), label: 'Réseaux sociaux (facultatif)', href: '/admin/informations' },
+    {
+      done: Object.values(restaurant.socials).some(Boolean),
+      label: 'Réseaux sociaux (facultatif)',
+      href: '/admin/informations',
+    },
     { done: Boolean(content.legalNotice), label: 'Mentions légales (obligatoires)', href: '/admin/contenus#legal' },
-    { done: services.dineIn || services.takeaway || services.delivery, label: 'Services proposés (sur place, à emporter…)', href: '/admin/informations#services' },
+    {
+      done: services.dineIn || services.takeaway || services.delivery,
+      label: 'Services proposés (sur place, à emporter…)',
+      href: '/admin/informations#services',
+    },
   ]
   const remaining = checklist.filter((c) => !c.done).length
 
@@ -39,7 +55,9 @@ export default async function Dashboard() {
         <div>
           <h1 className="adm-title">Tableau de bord</h1>
           <p className="adm-sub">
-            {status.state === 'unknown' ? 'Renseignez vos horaires pour afficher l’état d’ouverture sur le site.' : `Sur le site : ${describeStatus(status)}.`}
+            {status.state === 'unknown'
+              ? 'Renseignez vos horaires pour afficher l’état d’ouverture sur le site.'
+              : `Sur le site : ${describeStatus(status)}.`}
           </p>
         </div>
         <a href="/" target="_blank" rel="noopener" className="adm-btn">
@@ -67,7 +85,11 @@ export default async function Dashboard() {
           </Link>
         )}
         {services.reservations.enabled && (
-          <Link className="adm-stat" href="/admin/reservations" data-tone={counts.reservations > 0 ? 'warn' : undefined}>
+          <Link
+            className="adm-stat"
+            href="/admin/reservations"
+            data-tone={counts.reservations > 0 ? 'warn' : undefined}
+          >
             <strong>{counts.reservations}</strong>
             <span>réservations à confirmer</span>
           </Link>
@@ -75,8 +97,15 @@ export default async function Dashboard() {
       </div>
 
       <section className="adm-card">
-        <h2>Mise en route {remaining > 0 ? `— ${remaining} étape${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}` : '— tout est prêt ✓'}</h2>
-        <p className="adm-card-sub">Tant qu’une information manque, le site affiche un message neutre à sa place, jamais une donnée inventée.</p>
+        <h2>
+          Mise en route{' '}
+          {remaining > 0
+            ? `— ${remaining} étape${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}`
+            : '— tout est prêt ✓'}
+        </h2>
+        <p className="adm-card-sub">
+          Tant qu’une information manque, le site affiche un message neutre à sa place, jamais une donnée inventée.
+        </p>
         <div className="adm-checklist">
           {checklist.map((c) => (
             <Link key={c.label} href={c.href} className="adm-check" data-done={c.done}>

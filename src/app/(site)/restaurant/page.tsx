@@ -44,7 +44,12 @@ export default async function RestaurantPage() {
 
   return (
     <>
-      <PageHero eyebrow={site.restaurant.name} title={content.restaurantTitle} accent="à la lumière" intro={content.restaurantIntro} />
+      <PageHero
+        eyebrow={site.restaurant.name}
+        title={content.restaurantTitle}
+        accent="à la lumière"
+        intro={content.restaurantIntro}
+      />
 
       <Marquee words={menu.map((c) => c.name)} />
 
@@ -67,7 +72,11 @@ export default async function RestaurantPage() {
                 {i === 0 && (
                   <ul className={styles.swatches} aria-label="Couleurs de l’identité">
                     {SWATCHES.map((s, si) => (
-                      <li key={s.token} data-reveal="up" style={{ '--d': `${0.15 + si * 0.08}s` } as React.CSSProperties}>
+                      <li
+                        key={s.token}
+                        data-reveal="up"
+                        style={{ '--d': `${0.15 + si * 0.08}s` } as React.CSSProperties}
+                      >
                         <span className={styles.swatch} data-token={s.token} />
                         <span className={styles.swatchName}>{s.name}</span>
                         <span className={styles.swatchHex}>{s.hex}</span>
@@ -83,7 +92,11 @@ export default async function RestaurantPage() {
                   </figure>
                 )}
                 {second && (
-                  <figure className={styles.sidePhoto} data-reveal="sun" style={{ '--d': '0.2s' } as React.CSSProperties}>
+                  <figure
+                    className={styles.sidePhoto}
+                    data-reveal="sun"
+                    style={{ '--d': '0.2s' } as React.CSSProperties}
+                  >
                     <Picture media={second} sizes="(max-width: 960px) 50vw, 22vw" />
                   </figure>
                 )}

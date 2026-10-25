@@ -10,11 +10,23 @@ export function LoginForm({ next }: { next: string }) {
       <input type="hidden" name="suite" value={next} />
       <label className="adm-field">
         <span>Identifiant</span>
-        <input name="username" autoComplete="username" required autoFocus={!state.username} defaultValue={state.username} />
+        <input
+          name="username"
+          autoComplete="username"
+          required
+          autoFocus={!state.username}
+          defaultValue={state.username}
+        />
       </label>
       <label className="adm-field">
         <span>Mot de passe</span>
-        <input name="password" type="password" autoComplete="current-password" required autoFocus={Boolean(state.username)} />
+        <input
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          autoFocus={Boolean(state.username)}
+        />
       </label>
       {state.error && (
         <p className="adm-error" role="alert">

@@ -16,7 +16,7 @@ export function Manifesto({ text, name, photo }: { text: string; name: string; p
     const ctx = gsap.context(() => {
       gsap.fromTo(
         `.${styles.word}`,
-        { opacity: 0.16 },
+        { opacity: 0.4 }, // ≥ 3:1 contrast even in the dim state (large text)
         {
           opacity: 1,
           stagger: 0.08,
@@ -32,7 +32,11 @@ export function Manifesto({ text, name, photo }: { text: string; name: string; p
       gsap.fromTo(
         `.${styles.stamp}`,
         { yPercent: 30 },
-        { yPercent: -30, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true } },
+        {
+          yPercent: -30,
+          ease: 'none',
+          scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true },
+        },
       )
     }, el)
     return () => ctx.revert()

@@ -263,7 +263,8 @@
   color: var(--a-muted);
 }
 .adm-check[data-done='true']::before {
-  background: var(--a-ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3 3 7-7' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")
+  background: var(--a-ok)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3 3 7-7' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")
     center / 16px no-repeat;
   box-shadow: none;
 }
@@ -948,9 +949,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background:
-    radial-gradient(60% 50% at 50% 110%, rgb(255 194 26 / 0.45), transparent 70%),
-    var(--a-ink);
+  background: radial-gradient(60% 50% at 50% 110%, rgb(255 194 26 / 0.45), transparent 70%), var(--a-ink);
 }
 .adm-login-card {
   width: min(420px, 100%);
@@ -1057,4 +1056,7 @@
     padding-top: 0;
   }
 }
-.adm-mark { color: var(--a-sun); flex: none; }
+.adm-mark {
+  color: var(--a-sun);
+  flex: none;
+}

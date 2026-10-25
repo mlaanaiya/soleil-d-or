@@ -71,24 +71,42 @@ export function ReservationsTable({ rows, live }: { rows: AdminReservation[]; li
                 <small className="adm-sub">Réf. {r.ref}</small>
               </td>
               <td>
-                <span className="adm-tag" data-tone={r.status === 'pending' ? 'sun' : r.status === 'confirmed' ? undefined : 'off'}>
+                <span
+                  className="adm-tag"
+                  data-tone={r.status === 'pending' ? 'sun' : r.status === 'confirmed' ? undefined : 'off'}
+                >
                   {RESERVATION_STATUS_LABELS[r.status]}
                 </span>
               </td>
               <td>
                 <div className="adm-order-btns">
                   {r.status !== 'confirmed' && (
-                    <button type="button" className="adm-btn adm-btn--small adm-btn--primary" disabled={pending} onClick={() => run(r.id, 'confirmed')}>
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn--small adm-btn--primary"
+                      disabled={pending}
+                      onClick={() => run(r.id, 'confirmed')}
+                    >
                       Confirmer
                     </button>
                   )}
                   {r.status === 'pending' && (
-                    <button type="button" className="adm-btn adm-btn--small adm-btn--danger" disabled={pending} onClick={() => run(r.id, 'declined')}>
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn--small adm-btn--danger"
+                      disabled={pending}
+                      onClick={() => run(r.id, 'declined')}
+                    >
                       Refuser
                     </button>
                   )}
                   {r.status === 'confirmed' && (
-                    <button type="button" className="adm-btn adm-btn--small adm-btn--danger" disabled={pending} onClick={() => window.confirm('Annuler cette réservation ?') && run(r.id, 'cancelled')}>
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn--small adm-btn--danger"
+                      disabled={pending}
+                      onClick={() => window.confirm('Annuler cette réservation ?') && run(r.id, 'cancelled')}
+                    >
                       Annuler
                     </button>
                   )}

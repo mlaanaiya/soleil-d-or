@@ -15,7 +15,14 @@
   width: 84%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 38%, #fff4c8, var(--soleil-pale) 16%, var(--soleil) 44%, var(--soleil-hot) 75%, #f08a00);
+  background: radial-gradient(
+    circle at 50% 38%,
+    #fff4c8,
+    var(--soleil-pale) 16%,
+    var(--soleil) 44%,
+    var(--soleil-hot) 75%,
+    #f08a00
+  );
   transform: translate3d(calc(var(--tx) * -18px), calc(var(--ty) * -12px), 0);
   animation: sunIn 1.4s var(--ease-out) 0.2s both;
 }

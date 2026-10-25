@@ -7,7 +7,13 @@ import { useLenis } from '@/components/motion/MotionProvider'
 import type { Media } from '@/lib/types'
 import styles from './GalleryWall.module.css'
 
-export type WallShot = { media: Media; caption: string; href: string | null; categorySlug: string | null; categoryName: string | null }
+export type WallShot = {
+  media: Media
+  caption: string
+  href: string | null
+  categorySlug: string | null
+  categoryName: string | null
+}
 
 /** Repeating rhythm of frame shapes so the wall never reads as a uniform grid. */
 const SHAPES = ['wide', 'tall', 'square', 'square', 'wide', 'tall', 'square', 'wide', 'square'] as const
@@ -94,7 +100,11 @@ export function GalleryWall({ shots }: { shots: WallShot[] }) {
           <li key={s.media.id} className={styles.cell} data-shape={SHAPES[i % SHAPES.length]}>
             <button type="button" className={styles.open} onClick={openAt(i)} aria-label={`Agrandir : ${s.caption}`}>
               <figure data-reveal="mask" style={{ '--d': `${(i % 4) * 0.06}s` } as React.CSSProperties}>
-                <Picture media={s.media} sizes="(max-width: 760px) 100vw, (max-width: 1200px) 50vw, 34vw" className={styles.pic} />
+                <Picture
+                  media={s.media}
+                  sizes="(max-width: 760px) 100vw, (max-width: 1200px) 50vw, 34vw"
+                  className={styles.pic}
+                />
               </figure>
               <span className={styles.caption}>
                 <span className="serif">{s.caption}</span>
@@ -139,10 +149,20 @@ export function GalleryWall({ shots }: { shots: WallShot[] }) {
                 )}
               </figcaption>
             </figure>
-            <button type="button" className={`${styles.nav} ${styles.prev}`} onClick={() => step(-1)} aria-label="Photo précédente">
+            <button
+              type="button"
+              className={`${styles.nav} ${styles.prev}`}
+              onClick={() => step(-1)}
+              aria-label="Photo précédente"
+            >
               ←
             </button>
-            <button type="button" className={`${styles.nav} ${styles.next}`} onClick={() => step(1)} aria-label="Photo suivante">
+            <button
+              type="button"
+              className={`${styles.nav} ${styles.next}`}
+              onClick={() => step(1)}
+              aria-label="Photo suivante"
+            >
               →
             </button>
             <button type="button" className={styles.close} onClick={close} aria-label="Fermer la visionneuse">

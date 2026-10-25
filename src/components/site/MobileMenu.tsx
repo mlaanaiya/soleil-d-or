@@ -59,7 +59,11 @@ export function MobileMenu({ open, onClose, isActive, status, phone, directions,
       <nav className={styles.nav} aria-label="Navigation mobile">
         <ul>
           <li style={{ '--i': 0 } as React.CSSProperties}>
-            <Link href="/" className={styles.link} aria-current={isActive('/') && !NAV.some((n) => isActive(n.href)) ? 'page' : undefined}>
+            <Link
+              href="/"
+              className={styles.link}
+              aria-current={isActive('/') && !NAV.some((n) => isActive(n.href)) ? 'page' : undefined}
+            >
               <span className={styles.index}>00</span>Accueil
             </Link>
           </li>

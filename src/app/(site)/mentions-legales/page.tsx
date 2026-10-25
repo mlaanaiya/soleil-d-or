@@ -5,7 +5,10 @@ import styles from './legal.module.css'
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await loadSite()
-  return { title: `Mentions légales & confidentialité — ${site.restaurant.name}`, alternates: { canonical: '/mentions-legales' } }
+  return {
+    title: `Mentions légales & confidentialité — ${site.restaurant.name}`,
+    alternates: { canonical: '/mentions-legales' },
+  }
 }
 
 export default async function LegalPage() {
@@ -48,7 +51,10 @@ export default async function LegalPage() {
 
         <section>
           <h2>Photographies</h2>
-          <p>Les photographies présentées sur ce site sont la propriété de {site.restaurant.name}. Toute reproduction est interdite sans autorisation.</p>
+          <p>
+            Les photographies présentées sur ce site sont la propriété de {site.restaurant.name}. Toute reproduction est
+            interdite sans autorisation.
+          </p>
         </section>
       </div>
     </>

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { formatTimeFr, groupedWeek } from '@/lib/hours'
+import { formatSlots, groupedWeek } from '@/lib/hours'
 import { telHref } from '@/lib/format'
 import type { SiteContext } from '@/lib/server/public'
 import styles from './VisitBlock.module.css'
@@ -57,11 +57,7 @@ export function VisitBlock({ site, index }: { site: SiteContext; index?: string 
               {groupedWeek(hours).map((g) => (
                 <div key={g.days} className={styles.row}>
                   <dt>{g.days}</dt>
-                  <dd>
-                    {g.slots.length === 0
-                      ? 'Fermé'
-                      : g.slots.map((s) => `${formatTimeFr(s.open)} – ${formatTimeFr(s.close)}`).join(' · ')}
-                  </dd>
+                  <dd>{formatSlots(g.slots)}</dd>
                 </div>
               ))}
             </dl>

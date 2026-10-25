@@ -114,9 +114,8 @@ export function getProduct(id: number): Product | null {
 }
 
 export function getPublicProductBySlug(slug: string): Product | null {
-  const row = db()
-    .prepare(`${PRODUCT_SELECT} WHERE p.slug = ? AND p.visible = 1 AND c.visible = 1`)
-    .get(slug) as ProductRow | undefined
+  const row = db().prepare(`${PRODUCT_SELECT} WHERE p.slug = ? AND p.visible = 1 AND c.visible = 1`).get(slug) as
+    ProductRow | undefined
   return row ? toProduct(row) : null
 }
 
@@ -268,7 +267,13 @@ export function move(table: 'products' | 'categories', id: number, direction: -1
 }
 
 /** Gallery photographs, each linked to the public product it illustrates (if any). */
-export function getGalleryShots(): Array<{ media: Media; caption: string; href: string | null; categorySlug: string | null; categoryName: string | null }> {
+export function getGalleryShots(): Array<{
+  media: Media
+  caption: string
+  href: string | null
+  categorySlug: string | null
+  categoryName: string | null
+}> {
   const products = listProducts({ publicOnly: true })
   return listGallery().map((media) => {
     const product = products.find((p) => p.photo?.id === media.id)

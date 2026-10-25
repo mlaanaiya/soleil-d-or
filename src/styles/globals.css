@@ -496,3 +496,12 @@ ol {
     scroll-behavior: auto !important;
   }
 }
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn:disabled::before {
+  display: none;
+}
