@@ -17,7 +17,7 @@ import styles from './product.module.css'
 export async function generateMetadata(props: PageProps<'/carte/[slug]'>): Promise<Metadata> {
   const { slug } = await props.params
   const site = await loadSite()
-  const product = getPublicProductBySlug(slug)
+  const product = await getPublicProductBySlug(slug)
   if (!product) return { title: `Produit introuvable — ${site.restaurant.name}` }
   const description = product.description || `${product.name}, à découvrir sur la carte de ${site.restaurant.name}.`
   const image = product.photo ? `/media/${product.photo.id}/og.jpg` : undefined
@@ -37,12 +37,12 @@ export async function generateMetadata(props: PageProps<'/carte/[slug]'>): Promi
 export default async function ProductPage(props: PageProps<'/carte/[slug]'>) {
   const { slug } = await props.params
   const site = await loadSite()
-  const product = getPublicProductBySlug(slug)
+  const product = await getPublicProductBySlug(slug)
   if (!product) notFound()
 
   const summary = summarize(product)
-  const suggestions = getSuggestions(product, 3).map(summarize)
-  const { prev, next } = getAdjacent(product)
+  const suggestions = (await getSuggestions(product, 3)).map(summarize)
+  const { prev, next } = await getAdjacent(product)
   const orderable = site.canOrderOnline && product.available && product.prices.length > 0
 
   const jsonLd = {

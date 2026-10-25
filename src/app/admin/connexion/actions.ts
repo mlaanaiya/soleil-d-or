@@ -22,15 +22,15 @@ export async function login(_: LoginState, form: FormData): Promise<LoginState> 
   const ip = await clientIp()
   const key = `login:${ip}:${username.toLowerCase()}`
 
-  if (!rateLimit(key, 5, 15 * 60_000) || !rateLimit(`login-ip:${ip}`, 30, 15 * 60_000)) {
+  if (!(await rateLimit(key, 5, 15 * 60_000)) || !(await rateLimit(`login-ip:${ip}`, 30, 15 * 60_000))) {
     return { error: 'Trop de tentatives. Réessayez dans 15 minutes.', username }
   }
   if (!username || !password) return { error: 'Identifiant et mot de passe requis.', username }
 
-  const user = findUserByCredentials(username, password)
+  const user = await findUserByCredentials(username, password)
   if (!user) return { error: 'Identifiant ou mot de passe incorrect.', username }
 
-  clearRateLimit(key)
+  await clearRateLimit(key)
   await startSession(user.id)
   redirect(safeNext(form.get('suite')))
 }

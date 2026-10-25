@@ -1,61 +1,51 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { Readable } from 'node:stream'
 import sharp from 'sharp'
-import { mediaDir } from '@/lib/server/paths'
+import { query } from '@/lib/server/db'
+import { getMediaFile, putMediaFile } from '@/lib/server/media'
 
 const ID = /^[A-Za-z0-9_-]{8,40}$/
-const FILE = /^(?:(\d{2,4})\.(avif|webp)|og\.jpg)$/
-const TYPES = { avif: 'image/avif', webp: 'image/webp', jpg: 'image/jpeg' } as const
+const FILE = /^(?:\d{2,4}\.(?:avif|webp)|og\.jpg)$/
+const VARIANT = /^(\d{2,4})\.webp$/
 
-/** Social sharing image (1200×630 JPEG), derived once from the largest WebP variant. */
-async function ensureOgImage(dir: string): Promise<boolean> {
-  const target = path.join(dir, 'og.jpg')
-  if (fs.existsSync(target)) return true
-  const largest = fs
-    .readdirSync(dir)
-    .filter((f) => /^\d+\.webp$/.test(f))
-    .sort((a, b) => parseInt(b) - parseInt(a))[0]
-  if (!largest) return false
-  const tmp = `${target}.${process.pid}.tmp`
-  await sharp(path.join(dir, largest))
+/** Social sharing image (1200×630 JPEG), derived once from the largest WebP variant and stored. */
+async function ogImage(id: string): Promise<{ contentType: string; bytes: Buffer } | null> {
+  const variants = await query<{ name: string }>(
+    "SELECT name FROM media_files WHERE media_id = $1 AND name LIKE '%.webp'",
+    [id],
+  )
+  const largest = variants
+    .map((v) => VARIANT.exec(v.name))
+    .filter((m): m is RegExpExecArray => Boolean(m))
+    .sort((a, b) => Number(b[1]) - Number(a[1]))[0]
+  if (!largest) return null
+  const source = await getMediaFile(id, largest[0])
+  if (!source) return null
+  const bytes = await sharp(source.bytes)
     .flatten({ background: '#0c0b09' })
     .resize(1200, 630, { fit: 'cover', position: 'attention' })
     .jpeg({ quality: 84, mozjpeg: true })
-    .toFile(tmp)
-  fs.renameSync(tmp, target)
-  return true
+    .toBuffer()
+  await putMediaFile(id, 'og.jpg', 'image/jpeg', bytes)
+  return { contentType: 'image/jpeg', bytes }
 }
 
 export async function GET(_request: Request, ctx: RouteContext<'/media/[id]/[file]'>) {
   const { id, file } = await ctx.params
-  const match = FILE.exec(file)
-  if (!ID.test(id) || !match) return new Response('Not found', { status: 404 })
+  if (!ID.test(id) || !FILE.test(file)) return new Response('Not found', { status: 404 })
 
-  const dir = path.join(mediaDir(), id)
-  if (file === 'og.jpg') {
-    try {
-      if (!(await ensureOgImage(dir))) return new Response('Not found', { status: 404 })
-    } catch {
-      return new Response('Not found', { status: 404 })
-    }
-  }
-
-  const filePath = path.join(dir, file)
-  let stat: fs.Stats
+  let found: { contentType: string; bytes: Buffer } | null
   try {
-    stat = await fs.promises.stat(filePath)
-  } catch {
-    return new Response('Not found', { status: 404 })
+    found = (await getMediaFile(id, file)) ?? (file === 'og.jpg' ? await ogImage(id) : null)
+  } catch (error) {
+    console.error('[media]', error)
+    return new Response('Unavailable', { status: 503, headers: { 'Cache-Control': 'no-store' } })
   }
+  if (!found) return new Response('Not found', { status: 404 })
 
-  const ext = (match[2] ?? 'jpg') as keyof typeof TYPES
-  const stream = Readable.toWeb(fs.createReadStream(filePath)) as ReadableStream
-  return new Response(stream, {
+  return new Response(new Uint8Array(found.bytes), {
     headers: {
-      'Content-Type': TYPES[ext],
-      'Content-Length': String(stat.size),
-      // Media ids are never reused: a new upload always gets a new URL.
+      'Content-Type': found.contentType,
+      'Content-Length': String(found.bytes.byteLength),
+      // Media ids are never reused: a new upload always gets a new URL (cached by the CDN for a year).
       'Cache-Control': 'public, max-age=31536000, immutable',
       'X-Content-Type-Options': 'nosniff',
     },

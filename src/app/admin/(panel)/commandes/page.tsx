@@ -35,15 +35,15 @@ function toAdmin(o: Order): AdminOrder {
     total: formatPrice(o.totalCents),
     note: o.note,
     status: o.status,
-    createdLabel: dateTime.format(new Date(`${o.createdAt.replace(' ', 'T')}Z`)),
+    createdLabel: dateTime.format(new Date(o.createdAt)),
   }
 }
 
 export default async function OrdersAdmin(props: PageProps<'/admin/commandes'>) {
   const { vue } = await props.searchParams
   const archive = vue === 'archives'
-  const enabled = getSetting('services').ordering.enabled
-  const orders = listOrders(archive ? 'archive' : 'active').map(toAdmin)
+  const enabled = (await getSetting('services')).ordering.enabled
+  const orders = (await listOrders(archive ? 'archive' : 'active')).map(toAdmin)
   return (
     <>
       <header className="adm-page-head">

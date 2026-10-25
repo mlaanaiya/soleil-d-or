@@ -15,7 +15,7 @@ export default async function ReservationTracking(props: PageProps<'/reserver/su
   const { ref } = await props.params
   const { t } = await props.searchParams
   const site = await loadSite()
-  const resa = typeof t === 'string' ? getReservationForCustomer(ref, t) : null
+  const resa = typeof t === 'string' ? await getReservationForCustomer(ref, t) : null
   if (!resa) notFound()
   const final = resa.status !== 'pending'
 

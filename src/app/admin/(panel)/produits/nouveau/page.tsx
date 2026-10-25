@@ -8,8 +8,8 @@ export const metadata: Metadata = { title: 'Nouveau produit' }
 
 export default async function NewProduct(props: PageProps<'/admin/produits/nouveau'>) {
   const { categorie } = await props.searchParams
-  const categories = listCategories()
-  const { photos, cutouts } = mediaLibraries()
+  const categories = await listCategories()
+  const { photos, cutouts } = await mediaLibraries()
   const preset = Number(categorie)
   return (
     <>

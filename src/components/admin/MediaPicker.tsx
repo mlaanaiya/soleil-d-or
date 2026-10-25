@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { prepareUpload } from '@/lib/client/prepare-upload'
 
 export type LibraryItem = { id: string; url: string; alt: string }
 
@@ -14,23 +15,41 @@ type Props = {
 }
 
 /** Upload through the admin media route; returns the new library items. */
+type UploadResponse = {
+  created?: Array<{ id: string; alt: string; widths: number[] }>
+  errors?: string[]
+  error?: string
+}
+
+/** Uploads files one by one (each request stays under the host's body limit). */
 export async function uploadFiles(files: FileList | File[], kind: 'photo' | 'cutout', inGallery = false) {
-  const body = new FormData()
-  Array.from(files).forEach((f) => body.append('file', f))
-  body.append('kind', kind)
-  body.append('inGallery', String(inGallery))
-  const res = await fetch('/api/admin/media', { method: 'POST', body })
-  const data = (await res.json().catch(() => ({}))) as {
-    created?: Array<{ id: string; alt: string; widths: number[] }>
-    errors?: string[]
-    error?: string
+  const created: LibraryItem[] = []
+  const errors: string[] = []
+  for (const original of Array.from(files)) {
+    const file = await prepareUpload(original, kind)
+    const body = new FormData()
+    body.append('file', file)
+    body.append('alt', original.name.replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' '))
+    body.append('kind', kind)
+    body.append('inGallery', String(inGallery))
+    let data: UploadResponse = {}
+    try {
+      const res = await fetch('/api/admin/media', { method: 'POST', body })
+      data = (await res.json().catch(() => ({
+        error: res.status === 413 ? `${original.name} : fichier trop lourd.` : `${original.name} : envoi impossible.`,
+      }))) as UploadResponse
+    } catch {
+      data = { error: `${original.name} : connexion interrompue.` }
+    }
+    for (const m of data.created ?? []) {
+      created.push({
+        id: m.id,
+        alt: m.alt,
+        url: `/media/${m.id}/${m.widths.find((w) => w >= 400) ?? m.widths.at(-1)}.webp`,
+      })
+    }
+    errors.push(...(data.error ? [data.error] : (data.errors ?? [])))
   }
-  const created: LibraryItem[] = (data.created ?? []).map((m) => ({
-    id: m.id,
-    alt: m.alt,
-    url: `/media/${m.id}/${m.widths.find((w) => w >= 400) ?? m.widths.at(-1)}.webp`,
-  }))
-  const errors = data.error ? [data.error] : (data.errors ?? [])
   return { created, errors }
 }
 

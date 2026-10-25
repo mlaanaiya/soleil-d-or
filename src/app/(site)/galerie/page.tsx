@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function GaleriePage() {
   const site = await loadSite()
-  const shots = getGalleryShots()
+  const shots = await getGalleryShots()
   return (
     <>
       <PageHero

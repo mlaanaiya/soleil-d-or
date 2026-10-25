@@ -1,40 +1,33 @@
-import fs from 'node:fs'
-import path from 'node:path'
 import type { Metadata } from 'next'
 import { MediaLibrary, type AdminMedia } from '@/components/admin/MediaLibrary'
-import { listMedia, mediaUsage } from '@/lib/server/media'
-import { mediaDir } from '@/lib/server/paths'
+import { listMedia, mediaStats } from '@/lib/server/media'
 import type { Media } from '@/lib/types'
 
 export const metadata: Metadata = { title: 'Photos & galerie' }
 
-function folderSize(id: string): string {
-  try {
-    const dir = path.join(mediaDir(), id)
-    const bytes = fs.readdirSync(dir).reduce((n, f) => n + fs.statSync(path.join(dir, f)).size, 0)
-    return `${(bytes / 1024 / 1024).toFixed(1)} Mo`
-  } catch {
-    return '—'
-  }
-}
-
-function toAdmin(m: Media): AdminMedia {
+function toAdmin(m: Media, stats: Awaited<ReturnType<typeof mediaStats>>): AdminMedia {
   const w = m.widths.find((x) => x >= 400) ?? m.widths.at(-1)
+  const stat = stats.get(m.id)
   return {
     id: m.id,
     url: `/media/${m.id}/${w}.webp`,
     alt: m.alt,
     kind: m.kind,
     inGallery: m.inGallery,
-    usage: mediaUsage(m.id),
-    size: folderSize(m.id),
+    usage: stat?.usage ?? 0,
+    size: stat ? `${(stat.bytes / 1024 / 1024).toFixed(1)} Mo` : '—',
   }
 }
 
 export default async function PhotosAdmin() {
-  const photos = listMedia('photo')
+  const [allPhotos, allCutouts, stats] = await Promise.all([
+    await listMedia('photo'),
+    await listMedia('cutout'),
+    await mediaStats(),
+  ])
+  const photos = allPhotos
     .sort((a, b) => Number(b.inGallery) - Number(a.inGallery) || a.gallerySort - b.gallerySort)
-    .map(toAdmin)
+    .map((m) => toAdmin(m, stats))
   return (
     <>
       <header className="adm-page-head">
@@ -43,7 +36,7 @@ export default async function PhotosAdmin() {
           <p className="adm-sub">Importez, décrivez et organisez les photographies du restaurant.</p>
         </div>
       </header>
-      <MediaLibrary photos={photos} cutouts={listMedia('cutout').map(toAdmin)} />
+      <MediaLibrary photos={photos} cutouts={allCutouts.map((m) => toAdmin(m, stats))} />
     </>
   )
 }

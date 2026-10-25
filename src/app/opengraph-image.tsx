@@ -10,9 +10,12 @@ export const contentType = 'image/png'
 
 export default async function OpenGraphImage() {
   await connection()
-  const { name } = getSetting('restaurant')
-  const content = getSetting('content')
-  const hero = [...getProductsBySlugs(content.heroProducts), ...getFeatured()].find((p) => p.cutout)
+  const [{ name }, content, featured] = await Promise.all([
+    getSetting('restaurant'),
+    getSetting('content'),
+    getFeatured(),
+  ])
+  const hero = [...(await getProductsBySlugs(content.heroProducts)), ...featured].find((p) => p.cutout)
   const product = hero?.cutout ? await mediaAsPng(hero.cutout, 480) : null
   const [first, ...rest] = name.split(' ')
 

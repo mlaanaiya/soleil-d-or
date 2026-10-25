@@ -6,8 +6,8 @@ import { getSetting, setSetting } from '@/lib/server/settings'
 import { hoursSchema } from '@/lib/schemas'
 
 export async function saveRestaurant(_: ActionState, form: FormData): Promise<ActionState> {
-  return runAdmin(() => {
-    setSetting('restaurant', {
+  return runAdmin(async () => {
+    await setSetting('restaurant', {
       name: str(form, 'name'),
       street: str(form, 'street'),
       postalCode: str(form, 'postalCode'),
@@ -28,13 +28,13 @@ export async function saveRestaurant(_: ActionState, form: FormData): Promise<Ac
 }
 
 export async function saveServices(_: ActionState, form: FormData): Promise<ActionState> {
-  return runAdmin(() => {
+  return runAdmin(async () => {
     const labels = form.getAll('linkLabel').map(String)
     const urls = form.getAll('linkUrl').map(String)
     const externalLinks = urls
       .map((url, i) => ({ label: (labels[i] ?? '').trim(), url: url.trim() }))
       .filter((l) => l.url !== '' || l.label !== '')
-    setSetting('services', {
+    await setSetting('services', {
       dineIn: bool(form, 'dineIn'),
       takeaway: bool(form, 'takeaway'),
       delivery: bool(form, 'delivery'),
@@ -59,23 +59,23 @@ export async function saveServices(_: ActionState, form: FormData): Promise<Acti
 
 /** The hours editor posts its whole state as JSON; the schema is the single source of validation. */
 export async function saveHours(_: ActionState, form: FormData): Promise<ActionState> {
-  return runAdmin(() => {
+  return runAdmin(async () => {
     let raw: unknown
     try {
       raw = JSON.parse(str(form, 'payload'))
     } catch {
       raw = null
     }
-    setSetting('hours', hoursSchema.parse(raw))
+    await setSetting('hours', hoursSchema.parse(raw))
   }, 'Horaires enregistrés.')
 }
 
 export async function saveContent(_: ActionState, form: FormData): Promise<ActionState> {
-  return runAdmin(() => {
-    const current = getSetting('content')
+  return runAdmin(async () => {
+    const current = await getSetting('content')
     const titles = form.getAll('chapterTitle').map(String)
     const texts = form.getAll('chapterText').map(String)
-    setSetting('content', {
+    await setSetting('content', {
       ...current,
       heroKicker: str(form, 'heroKicker'),
       heroTagline: str(form, 'heroTagline'),

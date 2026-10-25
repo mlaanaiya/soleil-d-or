@@ -1,10 +1,7 @@
 import 'server-only'
 import crypto from 'node:crypto'
-import fs from 'node:fs'
-import path from 'node:path'
 import sharp, { type Metadata as SharpMetadata } from 'sharp'
-import { db } from './db'
-import { mediaDir } from './paths'
+import { one, query, transaction } from './db'
 import type { Media } from '../types'
 
 export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024
@@ -13,18 +10,18 @@ const ACCEPTED_FORMATS = new Set(['jpeg', 'png', 'webp', 'avif', 'heif'])
 
 export class MediaError extends Error {}
 
-type MediaRow = {
+export type MediaRow = {
   id: string
   kind: 'photo' | 'cutout'
   original_name: string
   alt: string
   width: number
   height: number
-  widths: string
-  has_alpha: number
+  widths: number[]
+  has_alpha: boolean
   placeholder: string
   color: string
-  in_gallery: number
+  in_gallery: boolean
   gallery_sort: number
 }
 
@@ -35,15 +32,19 @@ export function toMedia(row: MediaRow): Media {
     alt: row.alt,
     width: row.width,
     height: row.height,
-    widths: JSON.parse(row.widths) as number[],
-    hasAlpha: row.has_alpha === 1,
+    widths: row.widths,
+    hasAlpha: row.has_alpha,
     placeholder: row.placeholder,
     color: row.color,
-    inGallery: row.in_gallery === 1,
+    inGallery: row.in_gallery,
     gallerySort: row.gallery_sort,
     originalName: row.original_name,
   }
 }
+
+// Every column except the timestamps (never exposed) — bytes live in media_files.
+const MEDIA_COLUMNS =
+  'id, kind, original_name, alt, width, height, widths, has_alpha, placeholder, color, in_gallery, gallery_sort'
 
 function newId() {
   return crypto.randomBytes(12).toString('base64url')
@@ -86,115 +87,165 @@ export async function importImage(
   }
 
   const id = newId()
-  const dir = path.join(mediaDir(), id)
-  fs.mkdirSync(dir, { recursive: true })
+  const widths = variantWidths(info.width)
+  const files = await Promise.all(
+    widths.flatMap((w) => {
+      const resized = () => sharp(normalized).resize({ width: w, withoutEnlargement: true })
+      return [
+        resized()
+          .avif({ quality: hasAlpha ? 60 : 55, effort: 2 })
+          .toBuffer()
+          .then((bytes) => ({ name: `${w}.avif`, type: 'image/avif', bytes })),
+        resized()
+          .webp({ quality: 80, alphaQuality: 90, effort: 5 })
+          .toBuffer()
+          .then((bytes) => ({ name: `${w}.webp`, type: 'image/webp', bytes })),
+      ]
+    }),
+  )
 
-  try {
-    const widths = variantWidths(info.width)
-    await Promise.all(
-      widths.flatMap((w) => {
-        const resized = () => sharp(normalized).resize({ width: w, withoutEnlargement: true })
-        return [
-          resized()
-            .avif({ quality: hasAlpha ? 60 : 55, effort: 2 })
-            .toFile(path.join(dir, `${w}.avif`)),
-          resized()
-            .webp({ quality: 80, alphaQuality: 90, effort: 5 })
-            .toFile(path.join(dir, `${w}.webp`)),
-        ]
-      }),
-    )
+  const tiny = await sharp(normalized).resize({ width: 24 }).blur(0.6).webp({ quality: 40 }).toBuffer()
+  const placeholder = `data:image/webp;base64,${tiny.toString('base64')}`
+  const { dominant } = await sharp(normalized).stats()
+  const color = `#${[dominant.r, dominant.g, dominant.b].map((c) => c.toString(16).padStart(2, '0')).join('')}`
 
-    const tiny = await sharp(normalized).resize({ width: 24 }).blur(0.6).webp({ quality: 40 }).toBuffer()
-    const placeholder = `data:image/webp;base64,${tiny.toString('base64')}`
-    const { dominant } = await sharp(normalized).stats()
-    const color = `#${[dominant.r, dominant.g, dominant.b].map((c) => c.toString(16).padStart(2, '0')).join('')}`
-
-    const row: MediaRow = {
-      id,
-      kind: options.kind,
-      original_name: (options.originalName ?? '').slice(0, 160),
-      alt: options.alt.slice(0, 200),
-      width: info.width,
-      height: info.height,
-      widths: JSON.stringify(widths),
-      has_alpha: hasAlpha ? 1 : 0,
-      placeholder,
-      color,
-      in_gallery: options.inGallery ? 1 : 0,
-      gallery_sort: 0,
-    }
-    db()
-      .prepare(
-        `INSERT INTO media (id, kind, original_name, alt, width, height, widths, has_alpha, placeholder, color, in_gallery, gallery_sort)
-         VALUES (@id, @kind, @original_name, @alt, @width, @height, @widths, @has_alpha, @placeholder, @color, @in_gallery,
-                 (SELECT COALESCE(MAX(gallery_sort), 0) + 1 FROM media))`,
-      )
-      .run(row)
-    return toMedia(row)
-  } catch (error) {
-    fs.rmSync(dir, { recursive: true, force: true })
-    throw error
+  const row: MediaRow = {
+    id,
+    kind: options.kind,
+    original_name: (options.originalName ?? '').slice(0, 160),
+    alt: options.alt.slice(0, 200),
+    width: info.width,
+    height: info.height,
+    widths,
+    has_alpha: hasAlpha,
+    placeholder,
+    color,
+    in_gallery: options.inGallery ?? false,
+    gallery_sort: 0,
   }
+  await transaction(async (tx) => {
+    const [{ sort }] = (await tx.query<{ sort: number }>(
+      `INSERT INTO media (id, kind, original_name, alt, width, height, widths, has_alpha, placeholder, color, in_gallery, gallery_sort)
+       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $10, $11,
+               (SELECT COALESCE(MAX(gallery_sort), 0) + 1 FROM media))
+       RETURNING gallery_sort AS sort`,
+      [
+        row.id,
+        row.kind,
+        row.original_name,
+        row.alt,
+        row.width,
+        row.height,
+        JSON.stringify(row.widths),
+        row.has_alpha,
+        row.placeholder,
+        row.color,
+        row.in_gallery,
+      ],
+    )) as [{ sort: number }]
+    row.gallery_sort = sort
+    for (const file of files) {
+      await tx.query('INSERT INTO media_files (media_id, name, content_type, bytes) VALUES ($1, $2, $3, $4)', [
+        id,
+        file.name,
+        file.type,
+        file.bytes,
+      ])
+    }
+  })
+  return toMedia(row)
 }
 
-export function getMedia(id: string | null | undefined): Media | null {
+/** One stored file of a media (variant or derived image), or null. */
+export async function getMediaFile(id: string, name: string): Promise<{ contentType: string; bytes: Buffer } | null> {
+  const row = await one<{ content_type: string; bytes: Uint8Array }>(
+    'SELECT content_type, bytes FROM media_files WHERE media_id = $1 AND name = $2',
+    [id, name],
+  )
+  return row ? { contentType: row.content_type, bytes: Buffer.from(row.bytes) } : null
+}
+
+export async function putMediaFile(id: string, name: string, contentType: string, bytes: Buffer) {
+  await query(
+    `INSERT INTO media_files (media_id, name, content_type, bytes) VALUES ($1, $2, $3, $4)
+     ON CONFLICT (media_id, name) DO NOTHING`,
+    [id, name, contentType, bytes],
+  )
+}
+
+/** The WebP variant closest to (and at least) `width`, falling back to the largest one. */
+export async function getMediaWebp(media: Media, width: number): Promise<Buffer | null> {
+  const w = media.widths.find((x) => x >= width) ?? media.widths.at(-1)
+  return (await getMediaFile(media.id, `${w}.webp`))?.bytes ?? null
+}
+
+export async function getMedia(id: string | null | undefined): Promise<Media | null> {
   if (!id) return null
-  const row = db().prepare('SELECT * FROM media WHERE id = ?').get(id) as MediaRow | undefined
+  const row = await one<MediaRow>(`SELECT ${MEDIA_COLUMNS} FROM media WHERE id = $1`, [id])
   return row ? toMedia(row) : null
 }
 
-export function listMedia(kind?: 'photo' | 'cutout'): Media[] {
-  const rows = (
-    kind
-      ? db().prepare('SELECT * FROM media WHERE kind = ? ORDER BY created_at DESC, rowid DESC').all(kind)
-      : db().prepare('SELECT * FROM media ORDER BY created_at DESC, rowid DESC').all()
-  ) as MediaRow[]
+export async function listMedia(kind?: 'photo' | 'cutout'): Promise<Media[]> {
+  const rows = kind
+    ? await query<MediaRow>(`SELECT ${MEDIA_COLUMNS} FROM media WHERE kind = $1 ORDER BY created_at DESC, id`, [kind])
+    : await query<MediaRow>(`SELECT ${MEDIA_COLUMNS} FROM media ORDER BY created_at DESC, id`)
   return rows.map(toMedia)
 }
 
-export function listGallery(): Media[] {
-  const rows = db()
-    .prepare("SELECT * FROM media WHERE in_gallery = 1 AND kind = 'photo' ORDER BY gallery_sort, rowid")
-    .all() as MediaRow[]
+export async function listGallery(): Promise<Media[]> {
+  const rows = await query<MediaRow>(
+    `SELECT ${MEDIA_COLUMNS} FROM media WHERE in_gallery AND kind = 'photo' ORDER BY gallery_sort, created_at, id`,
+  )
   return rows.map(toMedia)
 }
 
-export function updateMedia(id: string, patch: { alt?: string; inGallery?: boolean }) {
-  const current = getMedia(id)
+export async function updateMedia(id: string, patch: { alt?: string; inGallery?: boolean }) {
+  const current = await getMedia(id)
   if (!current) throw new MediaError('Image introuvable.')
-  db()
-    .prepare('UPDATE media SET alt = ?, in_gallery = ? WHERE id = ?')
-    .run((patch.alt ?? current.alt).slice(0, 200), (patch.inGallery ?? current.inGallery) ? 1 : 0, id)
+  await query('UPDATE media SET alt = $1, in_gallery = $2 WHERE id = $3', [
+    (patch.alt ?? current.alt).slice(0, 200),
+    patch.inGallery ?? current.inGallery,
+    id,
+  ])
 }
 
-export function moveGalleryItem(id: string, direction: -1 | 1) {
-  const items = listGallery()
+export async function moveGalleryItem(id: string, direction: -1 | 1) {
+  const items = await listGallery()
   const index = items.findIndex((m) => m.id === id)
   const swap = items[index + direction]
   if (index < 0 || !swap) return
-  const reorder = db().transaction(() => {
-    items.forEach((m, i) => db().prepare('UPDATE media SET gallery_sort = ? WHERE id = ?').run(i, m.id))
-    db()
-      .prepare('UPDATE media SET gallery_sort = ? WHERE id = ?')
-      .run(index + direction, id)
-    db().prepare('UPDATE media SET gallery_sort = ? WHERE id = ?').run(index, swap.id)
+  const order = items.map((m) => m.id)
+  ;[order[index], order[index + direction]] = [swap.id, id]
+  await transaction(async (tx) => {
+    for (const [i, mediaId] of order.entries()) {
+      await tx.query('UPDATE media SET gallery_sort = $1 WHERE id = $2', [i, mediaId])
+    }
   })
-  reorder()
 }
 
-export function mediaUsage(id: string): number {
-  const row = db()
-    .prepare(
-      `SELECT (SELECT COUNT(*) FROM products WHERE photo_media_id = ? OR cutout_media_id = ?)
-            + (SELECT COUNT(*) FROM categories WHERE cover_media_id = ?) AS n`,
-    )
-    .get(id, id, id) as { n: number }
-  return row.n
+export async function mediaUsage(id: string): Promise<number> {
+  const row = await one<{ n: number }>(
+    `SELECT ((SELECT COUNT(*) FROM products WHERE photo_media_id = $1 OR cutout_media_id = $1)
+           + (SELECT COUNT(*) FROM categories WHERE cover_media_id = $1))::int AS n`,
+    [id],
+  )
+  return row?.n ?? 0
 }
 
-export function deleteMedia(id: string) {
+/** Per-media usage count (products and category covers) and stored size, in one query. */
+export async function mediaStats(): Promise<Map<string, { usage: number; bytes: number }>> {
+  const rows = await query<{ id: string; usage: number; bytes: number }>(
+    `SELECT m.id,
+            ((SELECT COUNT(*) FROM products p WHERE p.photo_media_id = m.id OR p.cutout_media_id = m.id)
+           + (SELECT COUNT(*) FROM categories c WHERE c.cover_media_id = m.id))::int AS usage,
+            (SELECT COALESCE(SUM(octet_length(f.bytes)), 0) FROM media_files f WHERE f.media_id = m.id)::float8 AS bytes
+     FROM media m`,
+  )
+  return new Map(rows.map((r) => [r.id, { usage: r.usage, bytes: Number(r.bytes) }]))
+}
+
+export async function deleteMedia(id: string) {
   if (!/^[A-Za-z0-9_-]{8,40}$/.test(id)) throw new MediaError('Identifiant invalide.')
-  db().prepare('DELETE FROM media WHERE id = ?').run(id)
-  fs.rmSync(path.join(mediaDir(), id), { recursive: true, force: true })
+  // Stored files go with it (ON DELETE CASCADE).
+  await query('DELETE FROM media WHERE id = $1', [id])
 }

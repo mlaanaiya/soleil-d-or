@@ -1,5 +1,6 @@
 import readline from 'node:readline'
 import { Writable } from 'node:stream'
+import { closeDb } from '../src/lib/server/db'
 import { passwordProblem, upsertUser } from '../src/lib/server/security'
 
 /** Usage : npm run admin:create -- <identifiant>  (le mot de passe est demandé sans être affiché) */
@@ -33,11 +34,13 @@ async function main(name: string) {
   rl.close()
   const problem = passwordProblem(password)
   if (problem) throw new Error(problem)
-  upsertUser(name, password)
+  await upsertUser(name, password)
   console.log(`Compte « ${name} » enregistré.`)
 }
 
-main(username).catch((error: Error) => {
-  console.error(error.message)
-  process.exit(1)
-})
+main(username)
+  .catch((error: Error) => {
+    console.error(error.message)
+    process.exitCode = 1
+  })
+  .finally(() => closeDb())

@@ -26,7 +26,7 @@ export async function assertAdmin(): Promise<User> {
 }
 
 export async function startSession(userId: number) {
-  const { token, expiresAt } = createSession(userId)
+  const { token, expiresAt } = await createSession(userId)
   ;(await cookies()).set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -38,7 +38,7 @@ export async function startSession(userId: number) {
 
 export async function endSession() {
   const jar = await cookies()
-  destroySession(jar.get(SESSION_COOKIE)?.value)
+  await destroySession(jar.get(SESSION_COOKIE)?.value)
   jar.delete(SESSION_COOKIE)
 }
 

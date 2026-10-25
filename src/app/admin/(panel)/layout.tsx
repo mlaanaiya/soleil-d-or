@@ -5,8 +5,8 @@ import { getSetting } from '@/lib/server/settings'
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser()
-  const services = getSetting('services')
-  const counts = pendingCounts()
+  const services = await getSetting('services')
+  const counts = await pendingCounts()
   return (
     <AdminShell
       username={user.username}

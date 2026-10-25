@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Connexion — Administration', robot
 export default async function LoginPage(props: PageProps<'/admin/connexion'>) {
   if (await currentUser()) redirect('/admin')
   const { suite } = await props.searchParams
-  const noAccount = countUsers() === 0
+  const noAccount = (await countUsers()) === 0
   return (
     <main className="adm-login">
       <div className="adm-login-card">

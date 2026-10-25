@@ -16,7 +16,7 @@ export default async function HoursAdmin() {
           </p>
         </div>
       </header>
-      <HoursEditor initial={getSetting('hours')} />
+      <HoursEditor initial={await getSetting('hours')} />
     </>
   )
 }

@@ -7,10 +7,6 @@ export function dataDir(): string {
   )
 }
 
-export function mediaDir(): string {
-  return path.join(/*turbopackIgnore: true*/ dataDir(), 'media')
-}
-
 export function assetsDir(): string {
   return path.join(/*turbopackIgnore: true*/ process.cwd(), 'assets')
 }

@@ -9,8 +9,8 @@ export const metadata: Metadata = { title: 'Produits & prix' }
 
 export default async function ProductsAdmin(props: PageProps<'/admin/produits'>) {
   const { sansprix, supprime } = await props.searchParams
-  const products = listProducts()
-  const groups: AdminCategoryGroup[] = listCategories().map((c) => ({
+  const products = await listProducts()
+  const groups: AdminCategoryGroup[] = (await listCategories()).map((c) => ({
     id: c.id,
     name: c.name,
     visible: c.visible,

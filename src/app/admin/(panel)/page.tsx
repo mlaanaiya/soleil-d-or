@@ -8,10 +8,10 @@ import { getSiteData } from '@/lib/server/settings'
 export const metadata: Metadata = { title: 'Tableau de bord' }
 
 export default async function Dashboard() {
-  const { restaurant, hours, services, content } = getSiteData()
-  const products = listProducts()
-  const categories = listCategories()
-  const counts = pendingCounts()
+  const { restaurant, hours, services, content } = await getSiteData()
+  const products = await listProducts()
+  const categories = await listCategories()
+  const counts = await pendingCounts()
   const withoutPrice = products.filter((p) => p.visible && p.prices.length === 0).length
   const unavailable = products.filter((p) => !p.available).length
   const status = getOpenStatus(hours)

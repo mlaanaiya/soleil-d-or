@@ -2,7 +2,8 @@ import 'server-only'
 import fs from 'node:fs'
 import path from 'node:path'
 import sharp from 'sharp'
-import { assetsDir, mediaDir } from './paths'
+import { getMediaWebp } from './media'
+import { assetsDir } from './paths'
 import type { Media } from '../types'
 
 let fonts: Array<{ name: string; data: Buffer; weight: 400 | 600 | 800; style: 'normal' | 'italic' }> | null = null
@@ -32,12 +33,10 @@ export function ogFonts() {
 
 /** PNG data URL of a stored image (Satori only decodes PNG/JPEG). */
 export async function mediaAsPng(media: Media, width: number): Promise<string | null> {
-  const w = media.widths.find((x) => x >= width) ?? media.widths.at(-1)
   try {
-    const buffer = await sharp(path.join(mediaDir(), media.id, `${w}.webp`))
-      .resize({ width })
-      .png({ compressionLevel: 8 })
-      .toBuffer()
+    const source = await getMediaWebp(media, width)
+    if (!source) return null
+    const buffer = await sharp(source).resize({ width }).png({ compressionLevel: 8 }).toBuffer()
     return `data:image/png;base64,${buffer.toString('base64')}`
   } catch {
     return null

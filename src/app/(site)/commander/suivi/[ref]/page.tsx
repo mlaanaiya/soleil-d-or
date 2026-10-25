@@ -16,7 +16,7 @@ export default async function OrderTracking(props: PageProps<'/commander/suivi/[
   const { ref } = await props.params
   const { t } = await props.searchParams
   const site = await loadSite()
-  const order = typeof t === 'string' ? getOrderForCustomer(ref, t) : null
+  const order = typeof t === 'string' ? await getOrderForCustomer(ref, t) : null
   if (!order) notFound()
   const index = FLOW.indexOf(order.status)
   const [date, time] = order.pickupAt.split('T')

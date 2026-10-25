@@ -39,7 +39,7 @@ export default async function ContactPage() {
 
   return (
     <>
-      <JsonLd data={restaurantJsonLd(site, getMenu())} />
+      <JsonLd data={restaurantJsonLd(site, await getMenu())} />
       <PageHero eyebrow="Infos pratiques" title="Contact" accent="& accès" intro={site.content.contactIntro}>
         {site.status.state !== 'unknown' && (
           <p className={styles.statusPill}>

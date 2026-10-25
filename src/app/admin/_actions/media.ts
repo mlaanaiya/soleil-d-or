@@ -12,9 +12,9 @@ export async function moveInGallery(id: string, direction: -1 | 1): Promise<Acti
 }
 
 export async function removeMedia(id: string): Promise<ActionState> {
-  return runAdmin(() => {
-    const used = mediaUsage(id)
+  return runAdmin(async () => {
+    const used = await mediaUsage(id)
     if (used > 0) throw new MediaError(`Cette photo est utilisée par ${used} élément(s). Remplacez-la d’abord.`)
-    deleteMedia(id)
+    await deleteMedia(id)
   }, 'Photo supprimée.')
 }

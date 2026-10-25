@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function CartePage() {
   await loadSite()
-  const menu = getMenu()
+  const menu = await getMenu()
   const count = menu.reduce((n, c) => n + c.products.length, 0)
 
   return (

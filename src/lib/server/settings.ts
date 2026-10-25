@@ -1,43 +1,43 @@
 import 'server-only'
-import { db } from './db'
+import { query } from './db'
 import { SETTINGS, type SettingsKey, type SettingsValue } from '../schemas'
 
 /**
  * Settings are stored as JSON documents and always re-validated on read, so a schema
  * evolution (new field with a default) never breaks an existing database.
  */
-export function getSetting<K extends SettingsKey>(key: K): SettingsValue<K> {
-  const row = db().prepare('SELECT value FROM settings WHERE key = ?').get(key) as { value: string } | undefined
+function parseSetting<K extends SettingsKey>(key: K, raw: unknown): SettingsValue<K> {
   const schema = SETTINGS[key]
-  let raw: unknown = {}
-  if (row) {
-    try {
-      raw = JSON.parse(row.value)
-    } catch {
-      raw = {}
-    }
-  }
-  const parsed = schema.safeParse(raw)
+  const parsed = schema.safeParse(raw ?? {})
   return (parsed.success ? parsed.data : schema.parse({})) as SettingsValue<K>
 }
 
-export function setSetting<K extends SettingsKey>(key: K, value: unknown): SettingsValue<K> {
+export async function getSetting<K extends SettingsKey>(key: K): Promise<SettingsValue<K>> {
+  const rows = await query<{ value: unknown }>('SELECT value FROM settings WHERE key = $1', [key])
+  return parseSetting(key, rows[0]?.value)
+}
+
+export async function setSetting<K extends SettingsKey>(key: K, value: unknown): Promise<SettingsValue<K>> {
   const parsed = SETTINGS[key].parse(value) as SettingsValue<K>
-  db()
-    .prepare(
-      `INSERT INTO settings (key, value) VALUES (?, ?)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')`,
-    )
-    .run(key, JSON.stringify(parsed))
+  await query(
+    `INSERT INTO settings (key, value) VALUES ($1, $2::jsonb)
+     ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = now()`,
+    [key, JSON.stringify(parsed)],
+  )
   return parsed
 }
 
-export function getSiteData() {
+/** All public settings in a single round trip. */
+export async function getSiteData() {
+  const rows = await query<{ key: string; value: unknown }>(
+    "SELECT key, value FROM settings WHERE key IN ('restaurant', 'hours', 'services', 'content')",
+  )
+  const raw = (key: string) => rows.find((r) => r.key === key)?.value
   return {
-    restaurant: getSetting('restaurant'),
-    hours: getSetting('hours'),
-    services: getSetting('services'),
-    content: getSetting('content'),
+    restaurant: parseSetting('restaurant', raw('restaurant')),
+    hours: parseSetting('hours', raw('hours')),
+    services: parseSetting('services', raw('services')),
+    content: parseSetting('content', raw('content')),
   }
 }
-export type SiteData = ReturnType<typeof getSiteData>
+export type SiteData = Awaited<ReturnType<typeof getSiteData>>

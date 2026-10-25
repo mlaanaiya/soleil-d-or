@@ -6,9 +6,9 @@ import { listCategories, listProducts } from '@/lib/server/catalog'
 export const metadata: Metadata = { title: 'Catégories' }
 
 export default async function CategoriesAdmin() {
-  const categories = listCategories()
-  const products = listProducts()
-  const { photos } = mediaLibraries()
+  const categories = await listCategories()
+  const products = await listProducts()
+  const { photos } = await mediaLibraries()
   return (
     <>
       <header className="adm-page-head">

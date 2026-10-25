@@ -6,7 +6,7 @@ import { getSetting } from '@/lib/server/settings'
 export const metadata: Metadata = { title: 'Textes du site' }
 
 export default async function ContentAdmin() {
-  const products = listProducts().map((p) => ({
+  const products = (await listProducts()).map((p) => ({
     slug: p.slug,
     name: p.name,
     hasCutout: Boolean(p.cutout),
@@ -22,7 +22,7 @@ export default async function ContentAdmin() {
           </p>
         </div>
       </header>
-      <ContentForm initial={getSetting('content')} products={products} />
+      <ContentForm initial={await getSetting('content')} products={products} />
     </>
   )
 }

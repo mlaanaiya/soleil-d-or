@@ -11,7 +11,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
-  serverExternalPackages: ['better-sqlite3', 'sharp'],
+  serverExternalPackages: ['sharp', 'postgres', '@electric-sql/pglite'],
+  // Fonts read at runtime by the social image; the source photos are only needed to seed the database.
+  outputFileTracingIncludes: { '/opengraph-image': ['./assets/fonts/**/*'] },
+  outputFileTracingExcludes: { '**': ['./assets/photos/**/*', './assets/cutouts/**/*', './data/**/*'] },
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },

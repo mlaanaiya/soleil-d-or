@@ -1,6 +1,6 @@
 import 'server-only'
 import crypto from 'node:crypto'
-import { db } from './db'
+import { one, query } from './db'
 
 /* ---------------------------- Passwords ---------------------------- */
 
@@ -35,9 +35,11 @@ export function passwordProblem(password: string): string | null {
 
 export type User = { id: number; username: string }
 
-export function findUserByCredentials(username: string, password: string): User | null {
-  const row = db().prepare('SELECT id, username, password_hash FROM users WHERE username = ?').get(username.trim()) as
-    { id: number; username: string; password_hash: string } | undefined
+export async function findUserByCredentials(username: string, password: string): Promise<User | null> {
+  const row = await one<{ id: number; username: string; password_hash: string }>(
+    'SELECT id, username, password_hash FROM users WHERE lower(username) = lower($1)',
+    [username.trim()],
+  )
   // Hash anyway when the user is unknown so response time does not reveal valid usernames.
   if (!row) {
     verifyPassword(password, DUMMY_HASH)
@@ -47,28 +49,26 @@ export function findUserByCredentials(username: string, password: string): User 
 }
 const DUMMY_HASH = hashPassword(crypto.randomBytes(16).toString('hex'))
 
-export function countUsers(): number {
-  return (db().prepare('SELECT COUNT(*) AS n FROM users').get() as { n: number }).n
+export async function countUsers(): Promise<number> {
+  return (await one<{ n: number }>('SELECT COUNT(*)::int AS n FROM users'))!.n
 }
 
-export function upsertUser(username: string, password: string) {
+export async function upsertUser(username: string, password: string) {
   const problem = passwordProblem(password)
   if (problem) throw new Error(problem)
-  db()
-    .prepare(
-      `INSERT INTO users (username, password_hash) VALUES (?, ?)
-       ON CONFLICT(username) DO UPDATE SET password_hash = excluded.password_hash`,
-    )
-    .run(username.trim(), hashPassword(password))
+  await query(
+    `INSERT INTO users (username, password_hash) VALUES ($1, $2)
+     ON CONFLICT ((lower(username))) DO UPDATE SET password_hash = excluded.password_hash`,
+    [username.trim(), hashPassword(password)],
+  )
 }
 
-export function changePassword(userId: number, current: string, next: string): string | null {
-  const row = db().prepare('SELECT password_hash FROM users WHERE id = ?').get(userId) as
-    { password_hash: string } | undefined
+export async function changePassword(userId: number, current: string, next: string): Promise<string | null> {
+  const row = await one<{ password_hash: string }>('SELECT password_hash FROM users WHERE id = $1', [userId])
   if (!row || !verifyPassword(current, row.password_hash)) return 'Mot de passe actuel incorrect.'
   const problem = passwordProblem(next)
   if (problem) return problem
-  db().prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hashPassword(next), userId)
+  await query('UPDATE users SET password_hash = $1 WHERE id = $2', [hashPassword(next), userId])
   return null
 }
 
@@ -79,55 +79,56 @@ export const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7
 
 const sha256 = (value: string) => crypto.createHash('sha256').update(value).digest('hex')
 
-export function createSession(userId: number): { token: string; expiresAt: number } {
+export async function createSession(userId: number): Promise<{ token: string; expiresAt: number }> {
   const token = crypto.randomBytes(32).toString('base64url')
   const expiresAt = Date.now() + SESSION_TTL_MS
-  db().prepare('DELETE FROM sessions WHERE expires_at < ?').run(Date.now())
-  db().prepare('INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)').run(sha256(token), userId, expiresAt)
+  await query('DELETE FROM sessions WHERE expires_at < now()')
+  await query('INSERT INTO sessions (id, user_id, expires_at) VALUES ($1, $2, $3::timestamptz)', [
+    sha256(token),
+    userId,
+    new Date(expiresAt).toISOString(),
+  ])
   return { token, expiresAt }
 }
 
-export function userForSession(token: string | undefined): User | null {
+export async function userForSession(token: string | undefined): Promise<User | null> {
   if (!token || token.length > 100) return null
-  const row = db()
-    .prepare(`SELECT u.id, u.username, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ?`)
-    .get(sha256(token)) as { id: number; username: string; expires_at: number } | undefined
-  if (!row || row.expires_at < Date.now()) return null
-  return { id: row.id, username: row.username }
+  const row = await one<{ id: number; username: string }>(
+    `SELECT u.id, u.username FROM sessions s JOIN users u ON u.id = s.user_id
+     WHERE s.id = $1 AND s.expires_at > now()`,
+    [sha256(token)],
+  )
+  return row ? { id: row.id, username: row.username } : null
 }
 
-export function destroySession(token: string | undefined) {
-  if (token) db().prepare('DELETE FROM sessions WHERE id = ?').run(sha256(token))
+export async function destroySession(token: string | undefined) {
+  if (token) await query('DELETE FROM sessions WHERE id = $1', [sha256(token)])
 }
 
-export function destroyOtherSessions(userId: number, keepToken: string | undefined) {
-  db()
-    .prepare('DELETE FROM sessions WHERE user_id = ? AND id != ?')
-    .run(userId, keepToken ? sha256(keepToken) : '')
+export async function destroyOtherSessions(userId: number, keepToken: string | undefined) {
+  await query('DELETE FROM sessions WHERE user_id = $1 AND id <> $2', [userId, keepToken ? sha256(keepToken) : ''])
 }
 
 /* --------------------------- Rate limiting ------------------------- */
 
-/** Fixed-window limiter persisted in SQLite. Returns true when the action is allowed. */
-export function rateLimit(key: string, limit: number, windowMs: number): boolean {
-  const now = Date.now()
-  return db().transaction(() => {
-    const row = db().prepare('SELECT count, reset_at FROM rate_limits WHERE key = ?').get(key) as
-      { count: number; reset_at: number } | undefined
-    if (!row || row.reset_at < now) {
-      db()
-        .prepare('INSERT OR REPLACE INTO rate_limits (key, count, reset_at) VALUES (?, 1, ?)')
-        .run(key, now + windowMs)
-      return true
-    }
-    if (row.count >= limit) return false
-    db().prepare('UPDATE rate_limits SET count = count + 1 WHERE key = ?').run(key)
-    return true
-  })()
+/**
+ * Fixed-window limiter persisted in the database, atomic in a single statement.
+ * Returns true when the action is allowed.
+ */
+export async function rateLimit(key: string, limit: number, windowMs: number): Promise<boolean> {
+  const row = await one<{ count: number }>(
+    `INSERT INTO rate_limits (key, count, reset_at) VALUES ($1, 1, now() + make_interval(secs => $2::float8))
+     ON CONFLICT (key) DO UPDATE SET
+       count    = CASE WHEN rate_limits.reset_at < now() THEN 1 ELSE rate_limits.count + 1 END,
+       reset_at = CASE WHEN rate_limits.reset_at < now() THEN excluded.reset_at ELSE rate_limits.reset_at END
+     RETURNING count`,
+    [key, windowMs / 1000],
+  )
+  return row!.count <= limit
 }
 
-export function clearRateLimit(key: string) {
-  db().prepare('DELETE FROM rate_limits WHERE key = ?').run(key)
+export async function clearRateLimit(key: string) {
+  await query('DELETE FROM rate_limits WHERE key = $1', [key])
 }
 
 /* ----------------------------- Tokens ------------------------------ */

@@ -9,8 +9,9 @@ function toItem(m: Media): LibraryItem {
 }
 
 /** Photo and cut-out libraries for the admin media pickers. */
-export function mediaLibraries() {
-  return { photos: listMedia('photo').map(toItem), cutouts: listMedia('cutout').map(toItem) }
+export async function mediaLibraries() {
+  const [photos, cutouts] = await Promise.all([listMedia('photo'), listMedia('cutout')])
+  return { photos: photos.map(toItem), cutouts: cutouts.map(toItem) }
 }
 
 export const centsToInput = (cents: number) => (cents / 100).toFixed(2).replace('.', ',')

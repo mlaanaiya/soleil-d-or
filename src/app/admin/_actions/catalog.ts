@@ -35,7 +35,7 @@ export async function saveProduct(_: ActionState, form: FormData): Promise<Actio
   const id = int(form, 'id')
   let createdId = 0
   const result = await runAdmin(
-    () => {
+    async () => {
       const name = str(form, 'name')
       const input = productInputSchema.parse({
         name,
@@ -51,8 +51,8 @@ export async function saveProduct(_: ActionState, form: FormData): Promise<Actio
         featured: bool(form, 'featured'),
         badge: str(form, 'badge'),
       })
-      if (id) updateProduct(id, input)
-      else createdId = createProduct(input)
+      if (id) await updateProduct(id, input)
+      else createdId = await createProduct(input)
     },
     id ? 'Produit enregistré. Le site est à jour.' : 'Produit créé.',
   )
@@ -61,15 +61,15 @@ export async function saveProduct(_: ActionState, form: FormData): Promise<Actio
 }
 
 export async function quickPrices(id: number, rows: Array<{ label: string; amount: string }>): Promise<ActionState> {
-  return runAdmin(() => {
-    const product = getProduct(id)
+  return runAdmin(async () => {
+    const product = await getProduct(id)
     if (!product) throw new CatalogError('Produit introuvable.')
     const form = new FormData()
     rows.forEach((r) => {
       form.append('priceLabel', r.label)
       form.append('priceAmount', r.amount)
     })
-    updateProduct(id, {
+    await updateProduct(id, {
       name: product.name,
       slug: product.slug,
       categoryId: product.categoryId,
@@ -107,7 +107,7 @@ export async function moveProduct(id: number, direction: -1 | 1): Promise<Action
 export async function saveCategory(_: ActionState, form: FormData): Promise<ActionState> {
   const id = int(form, 'id')
   return runAdmin(
-    () => {
+    async () => {
       const name = str(form, 'name')
       const input = categoryInputSchema.parse({
         name,
@@ -117,8 +117,8 @@ export async function saveCategory(_: ActionState, form: FormData): Promise<Acti
         coverMediaId: nullableId(form, 'coverMediaId'),
         visible: bool(form, 'visible'),
       })
-      if (id) updateCategory(id, input)
-      else createCategory(input)
+      if (id) await updateCategory(id, input)
+      else await createCategory(input)
     },
     id ? 'Catégorie enregistrée.' : 'Catégorie créée.',
   )

@@ -1,9 +1,9 @@
-import { beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createTempDataDir } from './setup-db'
 
 createTempDataDir()
 
-const { db } = await import('@/lib/server/db')
+const db = await import('@/lib/server/db')
 const catalog = await import('@/lib/server/catalog')
 const bookings = await import('@/lib/server/bookings')
 const security = await import('@/lib/server/security')
@@ -16,8 +16,10 @@ let burgerId = 0
 let soldOutId = 0
 let categoryId = 0
 
-beforeAll(() => {
-  categoryId = catalog.createCategory({
+afterAll(() => db.closeDb())
+
+beforeAll(async () => {
+  categoryId = await catalog.createCategory({
     name: 'Burgers',
     slug: 'burgers',
     tagline: '',
@@ -35,7 +37,7 @@ beforeAll(() => {
     featured: false,
     badge: '',
   }
-  burgerId = catalog.createProduct({
+  burgerId = await catalog.createProduct({
     ...base,
     name: 'Burger',
     slug: 'burger',
@@ -45,33 +47,36 @@ beforeAll(() => {
       { label: 'Menu', cents: 1100 },
     ],
   })
-  soldOutId = catalog.createProduct({
+  soldOutId = await catalog.createProduct({
     ...base,
     name: 'Rupture',
     slug: 'rupture',
     available: false,
     prices: [{ label: '', cents: 500 }],
   })
-  catalog.createProduct({ ...base, name: 'Sans prix', slug: 'sans-prix', available: true, prices: [] })
-  settings.setSetting('hours', { week: { mon: [{ open: '11:00', close: '23:00' }] } })
+  await catalog.createProduct({ ...base, name: 'Sans prix', slug: 'sans-prix', available: true, prices: [] })
+  await settings.setSetting('hours', { week: { mon: [{ open: '11:00', close: '23:00' }] } })
 })
 
 describe('schema & settings', () => {
-  it('migrates to the latest schema version', () => {
-    expect(db().pragma('user_version', { simple: true })).toBe(1)
+  it('migrates to the latest schema version', async () => {
+    expect(await db.schemaVersion()).toBe(db.LATEST_SCHEMA_VERSION)
   })
-  it('falls back to defaults when a stored document is corrupted', () => {
-    db().prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('content', '{not json')").run()
-    expect(settings.getSetting('content').heroTagline).toBeTruthy()
+  it('falls back to defaults when a stored document is corrupted', async () => {
+    await db.query(
+      `INSERT INTO settings (key, value) VALUES ('content', '"pas un objet"')
+       ON CONFLICT (key) DO UPDATE SET value = excluded.value`,
+    )
+    expect((await settings.getSetting('content')).heroTagline).toBeTruthy()
   })
-  it('validates settings on write', () => {
-    expect(() => settings.setSetting('restaurant', { email: 'pas-un-email' })).toThrow()
+  it('validates settings on write', async () => {
+    await expect(settings.setSetting('restaurant', { email: 'pas-un-email' })).rejects.toThrow()
   })
 })
 
 describe('catalogue', () => {
-  it('refuses duplicate slugs', () => {
-    expect(() =>
+  it('refuses duplicate slugs', async () => {
+    await expect(
       catalog.createProduct({
         name: 'X',
         slug: 'burger',
@@ -86,22 +91,22 @@ describe('catalogue', () => {
         featured: false,
         badge: '',
       }),
-    ).toThrow(catalog.CatalogError)
+    ).rejects.toThrow(catalog.CatalogError)
   })
-  it('protects non-empty categories from deletion', () => {
-    expect(() => catalog.deleteCategory(categoryId)).toThrow(/produits/)
+  it('protects non-empty categories from deletion', async () => {
+    await expect(catalog.deleteCategory(categoryId)).rejects.toThrow(/produits/)
   })
-  it('reorders products within their category', () => {
-    const before = catalog.listProducts({ categoryId }).map((p) => p.slug)
-    catalog.move('products', soldOutId, -1)
-    const after = catalog.listProducts({ categoryId }).map((p) => p.slug)
+  it('reorders products within their category', async () => {
+    const before = (await catalog.listProducts({ categoryId })).map((p) => p.slug)
+    await catalog.move('products', soldOutId, -1)
+    const after = (await catalog.listProducts({ categoryId })).map((p) => p.slug)
     expect(after[0]).toBe(before[1])
     expect(after[1]).toBe(before[0])
   })
-  it('hides invisible products from the public menu', () => {
-    catalog.setProductFlag(soldOutId, 'visible', false)
-    expect(catalog.getMenu()[0]!.products.map((p) => p.slug)).not.toContain('rupture')
-    catalog.setProductFlag(soldOutId, 'visible', true)
+  it('hides invisible products from the public menu', async () => {
+    await catalog.setProductFlag(soldOutId, 'visible', false)
+    expect((await catalog.getMenu())[0]!.products.map((p) => p.slug)).not.toContain('rupture')
+    await catalog.setProductFlag(soldOutId, 'visible', true)
   })
 })
 
@@ -115,21 +120,21 @@ describe('orders', () => {
     ...over,
   })
 
-  it('is refused while online ordering is disabled', () => {
-    expect(() => bookings.createOrder(order(), NOON)).toThrow(/pas disponible/)
+  it('is refused while online ordering is disabled', async () => {
+    await expect(bookings.createOrder(order(), NOON)).rejects.toThrow(/pas disponible/)
   })
 
-  it('recomputes prices on the server and stores a snapshot', () => {
-    settings.setSetting('services', { ordering: { enabled: true, leadMinutes: 20, slotMinutes: 15 } })
-    const { ref, token } = bookings.createOrder(order(), NOON)
-    const saved = bookings.getOrderForCustomer(ref, token)!
+  it('recomputes prices on the server and stores a snapshot', async () => {
+    await settings.setSetting('services', { ordering: { enabled: true, leadMinutes: 20, slotMinutes: 15 } })
+    const { ref, token } = await bookings.createOrder(order(), NOON)
+    const saved = (await bookings.getOrderForCustomer(ref, token))!
     expect(saved.totalCents).toBe(2200)
     expect(saved.items).toEqual([{ productId: burgerId, name: 'Burger', label: 'Menu', cents: 1100, quantity: 2 }])
-    expect(bookings.getOrderForCustomer(ref, 'wrong-token')).toBeNull()
+    expect(await bookings.getOrderForCustomer(ref, 'wrong-token')).toBeNull()
   })
 
-  it('merges duplicate lines', () => {
-    const lines = bookings.priceCart([
+  it('merges duplicate lines', async () => {
+    const lines = await bookings.priceCart([
       { productId: burgerId, priceIndex: 0, quantity: 1 },
       { productId: burgerId, priceIndex: 0, quantity: 2 },
     ])
@@ -137,22 +142,22 @@ describe('orders', () => {
     expect(lines.totalCents).toBe(2550)
   })
 
-  it('rejects unavailable products, unknown price options and invalid slots', () => {
-    expect(() =>
+  it('rejects unavailable products, unknown price options and invalid slots', async () => {
+    await expect(
       bookings.createOrder(order({ items: [{ productId: soldOutId, priceIndex: 0, quantity: 1 }] }), NOON),
-    ).toThrow(/indisponible/)
-    expect(() =>
+    ).rejects.toThrow(/indisponible/)
+    await expect(
       bookings.createOrder(order({ items: [{ productId: burgerId, priceIndex: 5, quantity: 1 }] }), NOON),
-    ).toThrow(/prix/)
-    expect(() => bookings.createOrder(order({ pickupAt: '2026-10-26T12:05' }), NOON)).toThrow(/créneau/)
-    expect(() => bookings.createOrder(order({ pickupAt: '2026-10-26T23:30' }), NOON)).toThrow(/créneau/)
+    ).rejects.toThrow(/prix/)
+    await expect(bookings.createOrder(order({ pickupAt: '2026-10-26T12:05' }), NOON)).rejects.toThrow(/créneau/)
+    await expect(bookings.createOrder(order({ pickupAt: '2026-10-26T23:30' }), NOON)).rejects.toThrow(/créneau/)
   })
 
-  it('lists active orders and moves them through statuses', () => {
-    const active = bookings.listOrders('active')
+  it('lists active orders and moves them through statuses', async () => {
+    const active = await bookings.listOrders('active')
     expect(active.length).toBeGreaterThan(0)
-    bookings.setOrderStatus(active[0]!.id, 'done')
-    expect(bookings.listOrders('archive').some((o) => o.id === active[0]!.id)).toBe(true)
+    await bookings.setOrderStatus(active[0]!.id, 'done')
+    expect((await bookings.listOrders('archive')).some((o) => o.id === active[0]!.id)).toBe(true)
   })
 })
 
@@ -168,46 +173,47 @@ describe('reservations', () => {
     ...over,
   })
 
-  it('is refused while disabled, then validates party size and slots', () => {
-    expect(() => bookings.createReservation(resa(), NOON)).toThrow(/pas disponible/)
-    settings.setSetting('services', {
+  it('is refused while disabled, then validates party size and slots', async () => {
+    await expect(bookings.createReservation(resa(), NOON)).rejects.toThrow(/pas disponible/)
+    await settings.setSetting('services', {
       reservations: { enabled: true, maxParty: 6, slotMinutes: 30, leadMinutes: 60, maxDaysAhead: 14 },
     })
-    expect(() => bookings.createReservation(resa({ partySize: 9 }), NOON)).toThrow(/6 personnes/)
-    expect(() => bookings.createReservation(resa({ time: '12:30' }), NOON)).toThrow(/horaire/)
-    expect(() => bookings.createReservation(resa({ date: '2026-10-27' }), NOON)).toThrow(/horaire/) // Tuesday: closed
-    expect(() => bookings.createReservation(resa({ date: '2026-12-31' }), NOON)).toThrow(/date/)
-    const { ref, token } = bookings.createReservation(resa(), NOON)
-    expect(bookings.getReservationForCustomer(ref, token)?.status).toBe('pending')
+    await expect(bookings.createReservation(resa({ partySize: 9 }), NOON)).rejects.toThrow(/6 personnes/)
+    await expect(bookings.createReservation(resa({ time: '12:30' }), NOON)).rejects.toThrow(/horaire/)
+    await expect(bookings.createReservation(resa({ date: '2026-10-27' }), NOON)).rejects.toThrow(/horaire/) // Tuesday: closed
+    await expect(bookings.createReservation(resa({ date: '2026-12-31' }), NOON)).rejects.toThrow(/date/)
+    const { ref, token } = await bookings.createReservation(resa(), NOON)
+    expect((await bookings.getReservationForCustomer(ref, token))?.status).toBe('pending')
   })
 })
 
 describe('security', () => {
-  it('hashes and verifies passwords with scrypt', () => {
+  it('hashes and verifies passwords with scrypt', async () => {
     const hash = security.hashPassword('une phrase de passe')
     expect(hash.startsWith('scrypt$')).toBe(true)
     expect(security.verifyPassword('une phrase de passe', hash)).toBe(true)
     expect(security.verifyPassword('mauvais', hash)).toBe(false)
   })
-  it('enforces a minimum password length', () => {
-    expect(() => security.upsertUser('admin', 'court')).toThrow()
+  it('enforces a minimum password length', async () => {
+    await expect(security.upsertUser('admin', 'court')).rejects.toThrow()
   })
-  it('authenticates users and manages sessions', () => {
-    security.upsertUser('gerant', 'mot-de-passe-solide')
-    const user = security.findUserByCredentials('GERANT', 'mot-de-passe-solide')!
+  it('authenticates users and manages sessions', async () => {
+    await security.upsertUser('gerant', 'mot-de-passe-solide')
+    const user = (await security.findUserByCredentials('GERANT', 'mot-de-passe-solide'))!
     expect(user.username).toBe('gerant')
-    expect(security.findUserByCredentials('gerant', 'nope')).toBeNull()
-    expect(security.findUserByCredentials('inconnu', 'mot-de-passe-solide')).toBeNull()
-    const { token } = security.createSession(user.id)
-    expect(security.userForSession(token)?.id).toBe(user.id)
-    security.destroySession(token)
-    expect(security.userForSession(token)).toBeNull()
+    expect(await security.findUserByCredentials('gerant', 'nope')).toBeNull()
+    expect(await security.findUserByCredentials('inconnu', 'mot-de-passe-solide')).toBeNull()
+    const { token } = await security.createSession(user.id)
+    expect((await security.userForSession(token))?.id).toBe(user.id)
+    await security.destroySession(token)
+    expect(await security.userForSession(token)).toBeNull()
   })
-  it('rate-limits repeated attempts', () => {
-    const results = Array.from({ length: 4 }, () => security.rateLimit('test:key', 3, 60_000))
+  it('rate-limits repeated attempts', async () => {
+    const results: boolean[] = []
+    for (let i = 0; i < 4; i++) results.push(await security.rateLimit('test:key', 3, 60_000))
     expect(results).toEqual([true, true, true, false])
   })
-  it('generates unambiguous references', () => {
+  it('generates unambiguous references', async () => {
     expect(security.humanRef()).toMatch(/^[A-HJ-NP-Z2-9]{6}$/)
   })
 })

@@ -19,13 +19,13 @@ function fieldErrors(error: z.ZodError): Record<string, string> {
 
 export async function placeOrder(input: unknown, honeypot: string): Promise<BookingResult> {
   if (honeypot) return { ok: false, error: 'Envoi refusé.' }
-  if (!rateLimit(`order:${await clientIp()}`, 6, 10 * 60_000)) {
+  if (!(await rateLimit(`order:${await clientIp()}`, 6, 10 * 60_000))) {
     return { ok: false, error: 'Trop de tentatives. Patientez quelques minutes ou appelez le restaurant.' }
   }
   const parsed = orderInputSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: 'Vérifiez les champs indiqués.', fields: fieldErrors(parsed.error) }
   try {
-    const { ref, token } = createOrder(parsed.data)
+    const { ref, token } = await createOrder(parsed.data)
     return { ok: true, url: `/commander/suivi/${ref}?t=${token}` }
   } catch (error) {
     if (error instanceof BookingError) return { ok: false, error: error.message }
@@ -36,13 +36,13 @@ export async function placeOrder(input: unknown, honeypot: string): Promise<Book
 
 export async function placeReservation(input: unknown, honeypot: string): Promise<BookingResult> {
   if (honeypot) return { ok: false, error: 'Envoi refusé.' }
-  if (!rateLimit(`reservation:${await clientIp()}`, 5, 10 * 60_000)) {
+  if (!(await rateLimit(`reservation:${await clientIp()}`, 5, 10 * 60_000))) {
     return { ok: false, error: 'Trop de tentatives. Patientez quelques minutes ou appelez le restaurant.' }
   }
   const parsed = reservationInputSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: 'Vérifiez les champs indiqués.', fields: fieldErrors(parsed.error) }
   try {
-    const { ref, token } = createReservation(parsed.data)
+    const { ref, token } = await createReservation(parsed.data)
     return { ok: true, url: `/reserver/suivi/${ref}?t=${token}` }
   } catch (error) {
     if (error instanceof BookingError) return { ok: false, error: error.message }

@@ -27,7 +27,7 @@ function directionsFor(lat: number | null, lng: number | null, address: string):
 /** Everything the public chrome needs, computed once per request and always fresh from the database. */
 export const loadSite = cache(async () => {
   await connection()
-  const data = getSiteData()
+  const data = await getSiteData()
   const { restaurant, services, hours } = data
   const address = fullAddress(restaurant)
   const status = getOpenStatus(hours)

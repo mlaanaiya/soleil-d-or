@@ -34,11 +34,22 @@ const CLOSE_UPS: Array<{ slug: string; focus: string; label: string }> = [
 export default async function RestaurantPage() {
   const site = await loadSite()
   const { content } = site
-  const menu = getMenu()
-  const photos = getProductsBySlugs(['assiette-grillee', 'naan-kebab', 'cordon-bleu', 'tacos-poulet', 'bowl-gourmand'])
-    .map((p) => p.photo)
+  const menu = await getMenu()
+  const showcase = await getProductsBySlugs([
+    ...new Set([
+      'assiette-grillee',
+      'naan-kebab',
+      'cordon-bleu',
+      'tacos-poulet',
+      'bowl-gourmand',
+      ...CLOSE_UPS.map((c) => c.slug),
+    ]),
+  ])
+  const photoOf = (slug: string) => showcase.find((p) => p.slug === slug)?.photo ?? null
+  const photos = ['assiette-grillee', 'naan-kebab', 'cordon-bleu', 'tacos-poulet', 'bowl-gourmand']
+    .map(photoOf)
     .filter((m): m is Media => m !== null)
-  const closeUps = CLOSE_UPS.map((c) => ({ ...c, media: getProductsBySlugs([c.slug])[0]?.photo ?? null })).filter(
+  const closeUps = CLOSE_UPS.map((c) => ({ ...c, media: photoOf(c.slug) })).filter(
     (c): c is (typeof CLOSE_UPS)[number] & { media: Media } => c.media !== null,
   )
 

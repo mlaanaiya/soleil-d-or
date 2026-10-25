@@ -10,9 +10,9 @@ export const metadata: Metadata = { title: 'Modifier un produit' }
 export default async function EditProduct(props: PageProps<'/admin/produits/[id]'>) {
   const { id } = await props.params
   const { cree } = await props.searchParams
-  const product = getProduct(Number(id))
+  const product = await getProduct(Number(id))
   if (!product) notFound()
-  const { photos, cutouts } = mediaLibraries()
+  const { photos, cutouts } = await mediaLibraries()
   return (
     <>
       <header className="adm-page-head">
@@ -45,7 +45,7 @@ export default async function EditProduct(props: PageProps<'/admin/produits/[id]
           featured: product.featured,
           badge: product.badge,
         }}
-        categories={listCategories().map((c) => ({ id: c.id, name: c.name }))}
+        categories={(await listCategories()).map((c) => ({ id: c.id, name: c.name }))}
         photos={photos}
         cutouts={cutouts}
       />

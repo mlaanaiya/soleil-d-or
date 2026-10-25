@@ -11,9 +11,9 @@ export async function updatePassword(_: ActionState, form: FormData): Promise<Ac
     const user = await assertAdmin()
     const next = str(form, 'next')
     if (next !== str(form, 'confirm')) throw new CatalogError('Les deux nouveaux mots de passe ne correspondent pas.')
-    const problem = changePassword(user.id, String(form.get('current') ?? ''), next)
+    const problem = await changePassword(user.id, String(form.get('current') ?? ''), next)
     if (problem) throw new CatalogError(problem)
-    destroyOtherSessions(user.id, await sessionToken())
+    await destroyOtherSessions(user.id, await sessionToken())
   }, 'Mot de passe modifié. Les autres appareils ont été déconnectés.')
 }
 

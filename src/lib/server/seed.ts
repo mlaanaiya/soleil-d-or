@@ -1,7 +1,7 @@
 import 'server-only'
 import fs from 'node:fs'
 import path from 'node:path'
-import { db } from './db'
+import { one, query } from './db'
 import { importImage } from './media'
 import { assetsDir } from './paths'
 import { countUsers, upsertUser } from './security'
@@ -226,33 +226,37 @@ const PRODUCTS: SeedProduct[] = [
 
 const META_KEY = '_seeded'
 
-function alreadySeeded(): boolean {
-  return Boolean(db().prepare('SELECT 1 FROM settings WHERE key = ?').get(META_KEY))
+async function alreadySeeded(): Promise<boolean> {
+  return Boolean(await one('SELECT 1 FROM settings WHERE key = $1', [META_KEY]))
 }
 
+/**
+ * Fills an empty database with the restaurant's categories, products and photographs.
+ * Safe to re-run after an interruption: existing categories and products are skipped.
+ */
 export async function seedIfEmpty(log: (msg: string) => void = () => {}): Promise<boolean> {
-  if (alreadySeeded()) return false
+  if (await alreadySeeded()) return false
   const photosDir = path.join(assetsDir(), 'photos')
   const cutoutsDir = path.join(assetsDir(), 'cutouts')
   if (!fs.existsSync(photosDir)) {
     log('Aucun dossier assets/photos : initialisation sans photos.')
   }
 
-  for (const key of ['restaurant', 'hours', 'services', 'content'] as const) setSetting(key, {})
+  for (const key of ['restaurant', 'hours', 'services', 'content'] as const) {
+    if (!(await one('SELECT 1 FROM settings WHERE key = $1', [key]))) await setSetting(key, {})
+  }
 
-  const insertCategory = db().prepare(
-    'INSERT INTO categories (slug, name, tagline, sort) VALUES (?, ?, ?, ?) ON CONFLICT(slug) DO NOTHING',
-  )
-  CATEGORIES.forEach((c, i) => insertCategory.run(c.slug, c.name, c.tagline, i + 1))
-  const categoryId = (slug: string) =>
-    (db().prepare('SELECT id FROM categories WHERE slug = ?').get(slug) as { id: number }).id
-
-  const insertProduct = db().prepare(
-    `INSERT INTO products (slug, category_id, name, description, photo_media_id, cutout_media_id, featured, sort)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(slug) DO NOTHING`,
-  )
+  for (const [i, c] of CATEGORIES.entries()) {
+    await query(
+      'INSERT INTO categories (slug, name, tagline, sort) VALUES ($1, $2, $3, $4) ON CONFLICT (slug) DO NOTHING',
+      [c.slug, c.name, c.tagline, i + 1],
+    )
+  }
+  const categoryId = async (slug: string) =>
+    (await one<{ id: number }>('SELECT id FROM categories WHERE slug = $1', [slug]))!.id
 
   for (const [index, p] of PRODUCTS.entries()) {
+    if (await one('SELECT 1 FROM products WHERE slug = $1', [p.slug])) continue
     const photoPath = path.join(photosDir, `${p.file}.jpg`)
     const cutoutPath = path.join(cutoutsDir, `${p.file}.webp`)
     const photo = fs.existsSync(photoPath)
@@ -267,40 +271,46 @@ export async function seedIfEmpty(log: (msg: string) => void = () => {}): Promis
       p.cutout && fs.existsSync(cutoutPath)
         ? await importImage(fs.readFileSync(cutoutPath), { kind: 'cutout', alt: p.alt, originalName: `${p.file}.webp` })
         : null
-    insertProduct.run(
-      p.slug,
-      categoryId(p.category),
-      p.name,
-      p.description,
-      photo?.id ?? null,
-      cutout?.id ?? null,
-      p.featured ? 1 : 0,
-      index + 1,
+    await query(
+      `INSERT INTO products (slug, category_id, name, description, photo_media_id, cutout_media_id, featured, sort)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (slug) DO NOTHING`,
+      [
+        p.slug,
+        await categoryId(p.category),
+        p.name,
+        p.description,
+        photo?.id ?? null,
+        cutout?.id ?? null,
+        p.featured ?? false,
+        index + 1,
+      ],
     )
     log(`  ✓ ${p.name}`)
   }
 
   // Category covers: the first photographed product of each category.
-  db().exec(`
+  await query(`
     UPDATE categories SET cover_media_id = (
-      SELECT photo_media_id FROM products WHERE category_id = categories.id AND photo_media_id IS NOT NULL ORDER BY sort LIMIT 1
-    )`)
+      SELECT photo_media_id FROM products WHERE category_id = categories.id AND photo_media_id IS NOT NULL
+      ORDER BY sort LIMIT 1
+    ) WHERE cover_media_id IS NULL`)
 
-  db()
-    .prepare('INSERT INTO settings (key, value) VALUES (?, ?)')
-    .run(META_KEY, JSON.stringify({ at: new Date().toISOString() }))
+  await query('INSERT INTO settings (key, value) VALUES ($1, $2::jsonb) ON CONFLICT (key) DO NOTHING', [
+    META_KEY,
+    JSON.stringify({ at: new Date().toISOString() }),
+  ])
   return true
 }
 
 /** Creates the first administrator from ADMIN_USERNAME / ADMIN_PASSWORD when no account exists. */
-export function ensureAdminFromEnv(log: (msg: string) => void = () => {}) {
-  if (countUsers() > 0) return
+export async function ensureAdminFromEnv(log: (msg: string) => void = () => {}) {
+  if ((await countUsers()) > 0) return
   const username = process.env.ADMIN_USERNAME?.trim()
   const password = process.env.ADMIN_PASSWORD
   if (!username || !password) {
     log('Aucun compte administrateur : définissez ADMIN_USERNAME et ADMIN_PASSWORD, ou lancez `npm run admin:create`.')
     return
   }
-  upsertUser(username, password)
+  await upsertUser(username, password)
   log(`Compte administrateur « ${username} » créé.`)
 }

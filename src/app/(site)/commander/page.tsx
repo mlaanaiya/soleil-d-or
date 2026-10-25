@@ -24,7 +24,7 @@ export default async function CommanderPage() {
 
   let online: React.ReactNode = null
   if (services.ordering.enabled) {
-    const categories: OrderableCategory[] = getMenu()
+    const categories: OrderableCategory[] = (await getMenu())
       .map((c) => ({
         slug: c.slug,
         name: c.name,

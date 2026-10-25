@@ -2,6 +2,9 @@ import { revalidatePath } from 'next/cache'
 import { currentUser } from '@/lib/server/auth'
 import { importImage, MAX_UPLOAD_BYTES, MediaError } from '@/lib/server/media'
 
+// Encoding every AVIF/WebP variant of a large photo takes a few seconds.
+export const maxDuration = 60
+
 /** Rejects cross-site submissions: the Origin header must match the host serving the admin. */
 function sameOrigin(request: Request): boolean {
   const origin = request.headers.get('origin')

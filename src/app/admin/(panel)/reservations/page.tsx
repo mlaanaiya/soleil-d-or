@@ -13,8 +13,8 @@ const dayFmt = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric
 export default async function ReservationsAdmin(props: PageProps<'/admin/reservations'>) {
   const { vue } = await props.searchParams
   const past = vue === 'passees'
-  const enabled = getSetting('services').reservations.enabled
-  const rows = listReservations(past ? 'past' : 'upcoming', zonedNow().date).map((r) => ({
+  const enabled = (await getSetting('services')).reservations.enabled
+  const rows = (await listReservations(past ? 'past' : 'upcoming', zonedNow().date)).map((r) => ({
     id: r.id,
     ref: r.ref,
     name: r.name,
