@@ -5,9 +5,11 @@ import { GalleryTeaser } from '@/components/home/GalleryTeaser'
 import { Hero, type HeroProduct } from '@/components/home/Hero'
 import { Manifesto } from '@/components/home/Manifesto'
 import { Spotlight } from '@/components/home/Spotlight'
+import { JsonLd } from '@/components/seo/JsonLd'
 import { VisitBlock } from '@/components/site/VisitBlock'
 import { getFeatured, getGalleryShots, getMenu, getProductsBySlugs } from '@/lib/server/catalog'
 import { loadSite } from '@/lib/server/public'
+import { restaurantJsonLd } from '@/lib/server/structured'
 import { priceLabel, summarize } from '@/lib/summary'
 import type { Product } from '@/lib/types'
 
@@ -32,6 +34,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={restaurantJsonLd(site, menu)} />
       <Hero
         name={site.restaurant.name}
         kicker={content.heroKicker}

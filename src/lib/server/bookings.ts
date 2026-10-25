@@ -226,3 +226,15 @@ export function pendingCounts(): { orders: number; reservations: number } {
   ).n
   return { orders, reservations }
 }
+
+/** Deletes finished orders and past reservations older than `days` (personal data minimisation). */
+export function purgeBookings(days: number): number {
+  const cutoff = `-${days} days`
+  const orders = db()
+    .prepare("DELETE FROM orders WHERE status IN ('done', 'cancelled') AND created_at < datetime('now', ?)")
+    .run(cutoff).changes
+  const reservations = db()
+    .prepare("DELETE FROM reservations WHERE date < date('now', ?)")
+    .run(cutoff).changes
+  return orders + reservations
+}

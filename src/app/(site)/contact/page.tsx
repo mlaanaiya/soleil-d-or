@@ -1,10 +1,13 @@
 import type { Metadata } from 'next'
 import { MapFacade } from '@/components/contact/MapFacade'
 import styles from '@/components/contact/Contact.module.css'
+import { JsonLd } from '@/components/seo/JsonLd'
 import { PageHero } from '@/components/site/PageHero'
 import { addDays, dayOf, exceptionFor, formatTimeFr, zonedNow } from '@/lib/hours'
 import { telHref } from '@/lib/format'
+import { getMenu } from '@/lib/server/catalog'
 import { loadSite } from '@/lib/server/public'
+import { restaurantJsonLd } from '@/lib/server/structured'
 import { DAYS, DAY_LABELS, type Slot } from '@/lib/schemas'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -39,6 +42,7 @@ export default async function ContactPage() {
 
   return (
     <>
+      <JsonLd data={restaurantJsonLd(site, getMenu())} />
       <PageHero eyebrow="Infos pratiques" title="Contact" accent="& accès" intro={site.content.contactIntro}>
         {site.status.state !== 'unknown' && (
           <p className={styles.statusPill}>

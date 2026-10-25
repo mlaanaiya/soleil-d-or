@@ -6,7 +6,21 @@ import { PointerLight } from '@/components/motion/PointerLight'
 import { RevealObserver } from '@/components/motion/RevealObserver'
 import { SunCourse } from '@/components/motion/SunCourse'
 import { SunTransition } from '@/components/motion/SunTransition'
+import type { Metadata } from 'next'
 import { loadSite } from '@/lib/server/public'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await loadSite()
+  const name = site.restaurant.name
+  const where = site.restaurant.city ? ` à ${site.restaurant.city}` : ''
+  return {
+    title: `${name} — Restauration rapide${where}`,
+    description: site.content.seoDescription,
+    alternates: { canonical: '/' },
+    openGraph: { type: 'website', locale: 'fr_FR', siteName: name },
+    twitter: { card: 'summary_large_image' },
+  }
+}
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const site = await loadSite()
