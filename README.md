@@ -40,19 +40,20 @@ Au premier lancement, la base embarquée `data/pglite` est créée et les photos
 
 ### Scripts
 
-| Commande               | Rôle                                                      |
-| ---------------------- | --------------------------------------------------------- |
-| `npm run dev`          | Serveur de développement                                  |
-| `npm run build`        | Build de production                                       |
-| `npm run vercel-build` | Prépare la base (migrations, photos, admin) puis build    |
-| `npm start`            | Serveur de production                                     |
-| `npm run lint`         | ESLint                                                    |
-| `npm run typecheck`    | Types des routes + TypeScript                             |
-| `npm test`             | Tests unitaires (Vitest)                                  |
-| `npm run test:e2e`     | Tests de bout en bout (Playwright, après `npm run build`) |
-| `npm run format`       | Prettier                                                  |
-| `npm run db:seed`      | Migre la base et l'initialise si elle est vide            |
-| `npm run admin:create` | Crée un compte ou réinitialise un mot de passe            |
+| Commande                | Rôle                                                      |
+| ----------------------- | --------------------------------------------------------- |
+| `npm run dev`           | Serveur de développement                                  |
+| `npm run build`         | Build de production                                       |
+| `npm run vercel-build`  | Prépare la base (migrations, photos, admin) puis build    |
+| `npm start`             | Serveur de production                                     |
+| `npm run lint`          | ESLint                                                    |
+| `npm run typecheck`     | Types des routes + TypeScript                             |
+| `npm test`              | Tests unitaires (Vitest)                                  |
+| `npm run test:postgres` | Mêmes tests via le pilote PostgreSQL de production        |
+| `npm run test:e2e`      | Tests de bout en bout (Playwright, après `npm run build`) |
+| `npm run format`        | Prettier                                                  |
+| `npm run db:seed`       | Migre la base et l'initialise si elle est vide            |
+| `npm run admin:create`  | Crée un compte ou réinitialise un mot de passe            |
 
 ### Variables d'environnement
 
@@ -70,7 +71,7 @@ Au premier lancement, la base embarquée `data/pglite` est créée et les photos
 
 - **Base** : projet Supabase `soleil-d-or` (région `eu-west-3`, Paris). L'application se connecte avec un rôle dédié `soleil_app`, propriétaire d'un schéma privé `app` que l'API publique de Supabase n'expose pas ; la sécurité au niveau des lignes (RLS) est activée sur toutes les tables.
 - **Site** : projet Vercel relié au dépôt GitHub, fonctions en région `cdg1` (`vercel.json`). Chaque déploiement lance `npm run vercel-build` : migrations, import des photos si la base est vide, création du compte administrateur s'il n'en existe aucun, puis `next build`.
-- **Variables Vercel** : `DATABASE_URL` (pooler Supabase, port 6543 : `postgres://soleil_app.<ref>:<mot de passe>@aws-…-eu-west-3.pooler.supabase.com:6543/postgres`), `SITE_URL` (adresse publique, à mettre à jour avec le nom de domaine définitif).
+- **Variables Vercel** : `ADMIN_USERNAME` / `ADMIN_PASSWORD` (compte initial, utilisés seulement tant qu'aucun compte n'existe), `DATABASE_URL` (pooler Supabase, port 6543 : `postgres://soleil_app.<ref>:<mot de passe>@aws-…-eu-west-3.pooler.supabase.com:6543/postgres`), `SITE_URL` (adresse publique, à mettre à jour avec le nom de domaine définitif).
 - **Envoi de photos** : Vercel limite une requête à 4,5 Mo ; l'administration réduit donc les photos plus lourdes dans le navigateur (2400 px maximum) avant de les envoyer, une par une.
 
 Pour un nom de domaine : Vercel → projet → Settings → Domains, puis mettez `SITE_URL` à jour et redéployez.
