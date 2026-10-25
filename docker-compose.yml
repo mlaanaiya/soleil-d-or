@@ -1,0 +1,15 @@
+services:
+  site:
+    build: .
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:3000:3000' # exposé derrière un reverse proxy HTTPS (Caddy, Nginx…)
+    environment:
+      SITE_URL: https://www.exemple.fr # ← adresse publique du site
+      ADMIN_USERNAME: admin # compte créé au premier démarrage uniquement
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?définissez ADMIN_PASSWORD}
+    volumes:
+      - soleil-data:/data # base de données + photos : à sauvegarder
+
+volumes:
+  soleil-data:
