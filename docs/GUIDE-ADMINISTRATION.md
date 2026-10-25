@@ -42,7 +42,7 @@ Toujours dans **Produits & prix** :
 **Produits & prix → + Nouveau produit**, ou cliquez sur le nom d'un produit.
 
 - **Nom, catégorie, description, prix.**
-- **Photo** : « Envoyer une image » (JPEG, PNG, WebP — jusqu'à 15 Mo). Le site crée automatiquement toutes les tailles optimisées.
+- **Photo** : « Envoyer une image » (JPEG, PNG, WebP). Les photos très lourdes sont réduites automatiquement avant l'envoi ; le site crée ensuite toutes les tailles optimisées.
 - **Détourage** (facultatif) : image PNG sans fond. Elle sert aux mises en scène sur fond de soleil (ouverture de l'accueil, fiche produit).
 - **Badge** (facultatif) : un mot comme « Nouveau ». Laissez vide pour aucun badge.
 - **Visible sur le site** : décochez pour masquer complètement un produit sans le supprimer.
@@ -107,10 +107,10 @@ Dans **Commandes → Archives** et **Réservations → Passées**, le bouton **�
 
 ## 14. Mot de passe oublié
 
-La personne qui gère l'hébergement peut le réinitialiser sur le serveur :
+La personne qui gère l'hébergement peut le réinitialiser depuis un ordinateur ayant le code du site, en pointant vers la base de production :
 
 ```bash
-npm run admin:create -- votre-identifiant
+DATABASE_URL='…' npm run admin:create -- votre-identifiant
 ```
 
 (le nouveau mot de passe est demandé sans être affiché).

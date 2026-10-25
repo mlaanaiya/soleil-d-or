@@ -17,13 +17,14 @@ Site vitrine et carte interactive du restaurant de restauration rapide **Soleil 
 | Besoin      | Choix                                                                               |
 | ----------- | ----------------------------------------------------------------------------------- |
 | Application | Next.js 16 (App Router, Turbopack), React 19, TypeScript strict                     |
-| Données     | SQLite (`better-sqlite3`, mode WAL), schéma versionné, validation `zod`             |
-| Images      | `sharp` : variantes AVIF + WebP (480 → 2400 px), placeholder flou, image de partage |
+| Données     | PostgreSQL : Supabase en production, PGlite (embarqué) en local, validation `zod`   |
+| Images      | `sharp` : variantes AVIF + WebP (480 → 2400 px) stockées en base, image de partage  |
 | Animations  | GSAP + ScrollTrigger, Lenis (défilement lissé sur ordinateur uniquement), CSS natif |
 | Polices     | Archivo variable (largeur + graisse) et Instrument Serif, auto-hébergées            |
+| Hébergement | Vercel (région Paris `cdg1`) + Supabase (base `eu-west-3`, Paris)                   |
 | Tests       | Vitest (unitaires) et Playwright (bout en bout sur le build de production)          |
 
-Pourquoi SQLite : un restaurant, un serveur, peu d'écritures. Un seul fichier à sauvegarder, aucune base externe à administrer, des lectures en microsecondes.
+Le même SQL PostgreSQL tourne partout : avec `DATABASE_URL`, le site se connecte à Supabase (pilote `postgres`, pooler en mode transaction) ; sans, il utilise PGlite, un PostgreSQL embarqué stocké dans `DATA_DIR` — aucune base à installer pour développer. Les photos optimisées sont stockées en base et servies avec un cache d'un an : le CDN de Vercel les sert ensuite sans toucher la base.
 
 ## Démarrer en local
 
@@ -35,7 +36,7 @@ cp .env.example .env.local        # puis renseignez ADMIN_PASSWORD (10 caractèr
 npm run dev                       # http://localhost:3000
 ```
 
-Au premier lancement, la base `data/` est créée et les photos importées (≈ 40 s), puis le compte administrateur est créé à partir de `ADMIN_USERNAME` / `ADMIN_PASSWORD`. Sans ces variables : `npm run admin:create -- identifiant`.
+Au premier lancement, la base embarquée `data/pglite` est créée et les photos importées (≈ 40 s), puis le compte administrateur est créé à partir de `ADMIN_USERNAME` / `ADMIN_PASSWORD`. Sans ces variables : `npm run admin:create -- identifiant`.
 
 ### Scripts
 
@@ -43,13 +44,14 @@ Au premier lancement, la base `data/` est créée et les photos importées (≈ 
 | ---------------------- | --------------------------------------------------------- |
 | `npm run dev`          | Serveur de développement                                  |
 | `npm run build`        | Build de production                                       |
+| `npm run vercel-build` | Prépare la base (migrations, photos, admin) puis build    |
 | `npm start`            | Serveur de production                                     |
 | `npm run lint`         | ESLint                                                    |
 | `npm run typecheck`    | Types des routes + TypeScript                             |
 | `npm test`             | Tests unitaires (Vitest)                                  |
 | `npm run test:e2e`     | Tests de bout en bout (Playwright, après `npm run build`) |
 | `npm run format`       | Prettier                                                  |
-| `npm run db:seed`      | Initialise la base si elle est vide                       |
+| `npm run db:seed`      | Migre la base et l'initialise si elle est vide            |
 | `npm run admin:create` | Crée un compte ou réinitialise un mot de passe            |
 
 ### Variables d'environnement
@@ -57,44 +59,37 @@ Au premier lancement, la base `data/` est créée et les photos importées (≈ 
 | Variable         | Rôle                                                                             |
 | ---------------- | -------------------------------------------------------------------------------- |
 | `SITE_URL`       | Adresse publique (SEO, sitemap, images de partage). Ex. `https://www.exemple.fr` |
-| `DATA_DIR`       | Dossier persistant (base + photos). Défaut : `./data`                            |
+| `DATABASE_URL`   | PostgreSQL (Supabase). Vide : base embarquée PGlite dans `DATA_DIR`              |
+| `DATA_DIR`       | Dossier de la base embarquée. Défaut : `./data`                                  |
 | `ADMIN_USERNAME` | Compte créé au premier démarrage s'il n'en existe aucun                          |
 | `ADMIN_PASSWORD` | Son mot de passe (à changer ensuite depuis l'administration)                     |
 
 ## Mise en production
 
-Le site a besoin d'un serveur Node.js **avec un disque persistant** (VPS, serveur dédié, PaaS avec volume). Les plateformes sans disque persistant ne conviennent pas à SQLite.
+### Vercel + Supabase (configuration actuelle)
 
-### Avec Docker
+- **Base** : projet Supabase `soleil-d-or` (région `eu-west-3`, Paris). L'application se connecte avec un rôle dédié `soleil_app`, propriétaire d'un schéma privé `app` que l'API publique de Supabase n'expose pas ; la sécurité au niveau des lignes (RLS) est activée sur toutes les tables.
+- **Site** : projet Vercel relié au dépôt GitHub, fonctions en région `cdg1` (`vercel.json`). Chaque déploiement lance `npm run vercel-build` : migrations, import des photos si la base est vide, création du compte administrateur s'il n'en existe aucun, puis `next build`.
+- **Variables Vercel** : `DATABASE_URL` (pooler Supabase, port 6543 : `postgres://soleil_app.<ref>:<mot de passe>@aws-…-eu-west-3.pooler.supabase.com:6543/postgres`), `SITE_URL` (adresse publique, à mettre à jour avec le nom de domaine définitif).
+- **Envoi de photos** : Vercel limite une requête à 4,5 Mo ; l'administration réduit donc les photos plus lourdes dans le navigateur (2400 px maximum) avant de les envoyer, une par une.
+
+Pour un nom de domaine : Vercel → projet → Settings → Domains, puis mettez `SITE_URL` à jour et redéployez.
+
+### Sur un serveur (Docker)
 
 ```bash
 ADMIN_PASSWORD='une-phrase-de-passe' docker compose up -d --build
 ```
 
-`docker-compose.yml` publie le port 3000 sur `127.0.0.1` uniquement : placez devant un reverse proxy HTTPS (Caddy, Nginx, Traefik) qui transmet `X-Forwarded-For` et `X-Forwarded-Host`. Exemple Caddy :
-
-```
-www.exemple.fr {
-  reverse_proxy 127.0.0.1:3000
-}
-```
-
-### Sans Docker
-
-```bash
-npm ci && npm run build
-SITE_URL=https://www.exemple.fr DATA_DIR=/var/lib/soleil-d-or npm start
-```
-
-(à lancer via systemd ou pm2, derrière un reverse proxy HTTPS).
+Sans `DATABASE_URL`, la base embarquée est conservée dans le volume `/data`. Avec `DATABASE_URL`, n'importe quel PostgreSQL 15+ convient. `docker-compose.yml` publie le port 3000 sur `127.0.0.1` uniquement : placez devant un reverse proxy HTTPS (Caddy, Nginx, Traefik) qui transmet `X-Forwarded-For` et `X-Forwarded-Host`.
 
 ### Sauvegardes
 
-Tout l'état du site est dans `DATA_DIR` : `soleil-d-or.sqlite` (+ fichiers `-wal`/`-shm`) et `media/`. Sauvegarde à chaud recommandée :
+Supabase sauvegarde la base quotidiennement (offre gratuite : 7 jours de rétention, restauration depuis le tableau de bord). Pour une copie complète (photos comprises, elles sont dans la base) :
 
 ```bash
-sqlite3 "$DATA_DIR/soleil-d-or.sqlite" ".backup '/sauvegardes/soleil-$(date +%F).sqlite'"
-rsync -a "$DATA_DIR/media/" /sauvegardes/media/
+pg_dump "postgres://soleil_app.<ref>:<mot de passe>@aws-…-eu-west-3.pooler.supabase.com:5432/postgres" \
+  --schema=app --format=custom --file="soleil-$(date +%F).dump"
 ```
 
 ## Architecture
@@ -121,7 +116,7 @@ assets/                photos et détourages d'origine, polices des images de pa
 tests/                 unit/ (Vitest) et e2e/ (Playwright)
 ```
 
-Le schéma de base est migré automatiquement au démarrage (`PRAGMA user_version`) : ajoutez une migration à la fin de la liste dans `src/lib/server/db.ts`, ne modifiez jamais une migration publiée.
+Le schéma est migré automatiquement (table `schema_migrations`, sous verrou consultatif pour les démarrages simultanés) : ajoutez une migration à la fin de la liste dans `src/lib/server/db.ts`, ne modifiez jamais une migration publiée.
 
 ## Sécurité
 
@@ -134,6 +129,6 @@ Le schéma de base est migré automatiquement au démarrage (`PRAGMA user_versio
 
 ## Qualité vérifiée
 
-- 44 tests unitaires (horaires, prix, schémas, commandes, réservations, sécurité, catalogue).
+- 44 tests unitaires (sur PostgreSQL embarqué) (horaires, prix, schémas, commandes, réservations, sécurité, catalogue).
 - 20 tests de bout en bout sur le build de production, ordinateur et mobile : navigation et transitions, carte (recherche, liste rapide), galerie au clavier, 404, mouvements réduits, en-têtes de sécurité, routes protégées, connexion, modification des prix et disponibilités, création de produit avec photo, horaires et coordonnées, commande et réservation complètes côté client et côté restaurateur, absence de débordement horizontal.
 - Lighthouse (build de production) : **99–100** sur ordinateur dans les quatre catégories ; sur mobile, accessibilité, bonnes pratiques et SEO à **100**, performance 88–93 sur les pages intérieures et ~82 sur l'accueil (ouverture animée, premier affichage réel ≈ 0,25 s).

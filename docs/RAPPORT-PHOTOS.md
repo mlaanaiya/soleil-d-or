@@ -43,7 +43,7 @@ Netteté mesurée par variance du laplacien (plus c'est haut, plus c'est net ; a
 
 ## Points d'attention
 
-1. **Résolution limitée (1536 px)** — suffisante aujourd'hui, mais les sections plein écran gagneraient en finesse avec des originaux d'au moins **2400 px** de large. L'administration accepte jusqu'à 15 Mo et génère automatiquement toutes les tailles : il suffit de remplacer la photo dans la fiche produit.
+1. **Résolution limitée (1536 px)** — suffisante aujourd'hui, mais les sections plein écran gagneraient en finesse avec des originaux d'au moins **2400 px** de large. L'administration accepte les photos lourdes (réduites automatiquement à 2400 px avant l'envoi) et génère toutes les tailles : il suffit de remplacer la photo dans la fiche produit.
 2. **Compositions répétitives** — les dix photos d'assiettes partagent exactement le même cadrage (assiette blanche, frites à droite, salade en haut). Le site compense par la mise en page (vignettes, gros plans, recadrages), mais une série de **gros plans** et de **photos d'ambiance** enrichirait nettement la galerie et la page « Notre restaurant ».
 3. **Textures très lissées** — certaines images (tacos, frites, laitue) présentent un rendu très retouché. Assurez-vous que chaque visuel représente fidèlement le produit réellement servi (portion, garniture) : c'est une exigence d'information du consommateur.
 4. **Intitulés et descriptions** — les noms des produits et les courtes descriptions sur le site sont repris **mot pour mot des titres de fichiers** fournis (ex. « Frites dorées en barquette noire » → « Frites dorées en barquette. »). Aucun ingrédient n'a été ajouté. À relire dans l'administration.

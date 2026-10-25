@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Soleil d'Or — image de production (Node 22, Next.js, SQLite, sharp)
+# Soleil d'Or — image de production (Node 22, Next.js, PostgreSQL embarqué ou DATABASE_URL, sharp)
 
 FROM node:22-bookworm-slim AS build
 WORKDIR /app
