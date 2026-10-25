@@ -295,7 +295,7 @@ export async function seedIfEmpty(log: (msg: string) => void = () => {}): Promis
       ORDER BY sort LIMIT 1
     ) WHERE cover_media_id IS NULL`)
 
-  await query('INSERT INTO settings (key, value) VALUES ($1, $2::jsonb) ON CONFLICT (key) DO NOTHING', [
+  await query('INSERT INTO settings (key, value) VALUES ($1, $2::text::jsonb) ON CONFLICT (key) DO NOTHING', [
     META_KEY,
     JSON.stringify({ at: new Date().toISOString() }),
   ])

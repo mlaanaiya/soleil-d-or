@@ -14,6 +14,7 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
+    "test:postgres": "tsx scripts/test-postgres-driver.ts",
     "test:e2e": "playwright test",
     "db:seed": "tsx --conditions=react-server scripts/seed.ts",
     "admin:create": "tsx --conditions=react-server scripts/create-admin.ts",
@@ -35,6 +36,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@electric-sql/pglite-socket": "^0.2.14",
     "@playwright/test": "^1.63.0",
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",

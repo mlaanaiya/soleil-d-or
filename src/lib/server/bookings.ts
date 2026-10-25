@@ -104,7 +104,7 @@ export async function createOrder(input: OrderInput, at: Date = new Date()): Pro
   const token = secretToken()
   await query(
     `INSERT INTO orders (ref, token, customer_name, phone, pickup_at, items, total_cents, note)
-     VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8)`,
+     VALUES ($1, $2, $3, $4, $5, $6::text::jsonb, $7, $8)`,
     [ref, token, input.name, input.phone, input.pickupAt, JSON.stringify(items), totalCents, input.note],
   )
   return { ref, token }

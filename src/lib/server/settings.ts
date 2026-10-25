@@ -20,7 +20,7 @@ export async function getSetting<K extends SettingsKey>(key: K): Promise<Setting
 export async function setSetting<K extends SettingsKey>(key: K, value: unknown): Promise<SettingsValue<K>> {
   const parsed = SETTINGS[key].parse(value) as SettingsValue<K>
   await query(
-    `INSERT INTO settings (key, value) VALUES ($1, $2::jsonb)
+    `INSERT INTO settings (key, value) VALUES ($1, $2::text::jsonb)
      ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = now()`,
     [key, JSON.stringify(parsed)],
   )

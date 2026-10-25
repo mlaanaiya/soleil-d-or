@@ -126,7 +126,7 @@ export async function importImage(
   await transaction(async (tx) => {
     const [{ sort }] = (await tx.query<{ sort: number }>(
       `INSERT INTO media (id, kind, original_name, alt, width, height, widths, has_alpha, placeholder, color, in_gallery, gallery_sort)
-       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $10, $11,
+       VALUES ($1, $2, $3, $4, $5, $6, $7::text::jsonb, $8, $9, $10, $11,
                (SELECT COALESCE(MAX(gallery_sort), 0) + 1 FROM media))
        RETURNING gallery_sort AS sort`,
       [

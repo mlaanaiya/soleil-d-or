@@ -191,7 +191,7 @@ export async function createProduct(input: ProductInput): Promise<number> {
   const row = await one<{ id: number }>(
     `INSERT INTO products (slug, category_id, name, description, details, prices, photo_media_id, cutout_media_id,
                            available, visible, featured, badge, sort)
-     VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12,
+     VALUES ($1, $2, $3, $4, $5, $6::text::jsonb, $7, $8, $9, $10, $11, $12,
              (SELECT COALESCE(MAX(sort), 0) + 1 FROM products WHERE category_id = $2))
      RETURNING id`,
     productParams(input),
@@ -203,7 +203,7 @@ export async function updateProduct(id: number, input: ProductInput) {
   await assertUniqueSlug('products', input.slug, id)
   await assertCategory(input.categoryId)
   const rows = await query(
-    `UPDATE products SET slug = $1, category_id = $2, name = $3, description = $4, details = $5, prices = $6::jsonb,
+    `UPDATE products SET slug = $1, category_id = $2, name = $3, description = $4, details = $5, prices = $6::text::jsonb,
        photo_media_id = $7, cutout_media_id = $8, available = $9, visible = $10, featured = $11, badge = $12,
        updated_at = now()
      WHERE id = $13 RETURNING id`,
