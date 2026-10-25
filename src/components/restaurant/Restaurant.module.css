@@ -1,0 +1,206 @@
+/* Marquee */
+.marquee {
+  overflow: hidden;
+  border-block: 1px solid var(--line);
+  padding-block: clamp(14px, 2vw, 26px);
+  margin-top: clamp(24px, 4vw, 56px);
+}
+.marqueeTrack {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+.marqueeItem {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(20px, 3vw, 48px);
+  padding-right: clamp(20px, 3vw, 48px);
+  font-weight: 800;
+  font-stretch: 62%;
+  text-transform: uppercase;
+  font-size: clamp(2.6rem, 7vw, 7rem);
+  line-height: 1;
+  white-space: nowrap;
+}
+.marqueeItem:nth-child(even) {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--creme-dim);
+}
+.marqueeSun {
+  width: 0.38em;
+  height: 0.38em;
+  border-radius: 50%;
+  background: var(--soleil);
+  clip-path: inset(0 0 45% 0);
+  box-shadow: 0 0 20px rgb(255 194 26 / 0.5);
+}
+
+/* Chapters */
+.chapter {
+  padding-block: clamp(72px, 9vw, 150px);
+}
+.chapterGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: clamp(32px, 6vw, 120px);
+  align-items: center;
+}
+.chapter[data-side='right'] .chapterText {
+  order: 2;
+}
+.chapterText {
+  position: relative;
+  display: grid;
+  gap: 22px;
+  align-content: start;
+}
+.chapterNum {
+  position: absolute;
+  top: -0.55em;
+  left: -0.06em;
+  font-weight: 800;
+  font-stretch: 62%;
+  font-size: clamp(8rem, 18vw, 18rem);
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(255 194 26 / 0.22);
+  z-index: -1;
+  pointer-events: none;
+}
+.chapterTitle {
+  font-weight: 800;
+  font-stretch: 62%;
+  text-transform: uppercase;
+  font-size: var(--t-xl);
+  line-height: 0.86;
+  padding-top: clamp(40px, 6vw, 90px);
+}
+.chapterBody {
+  font-size: var(--t-s);
+  line-height: 1.55;
+  color: var(--creme-2);
+  max-width: 40ch;
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+.swatches li {
+  display: grid;
+  gap: 4px;
+}
+.swatch {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  margin-bottom: 8px;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+.swatch[data-token='charbon'] {
+  background: var(--charbon);
+}
+.swatch[data-token='creme'] {
+  background: var(--creme);
+}
+.swatch[data-token='soleil'] {
+  background: radial-gradient(circle at 50% 35%, var(--soleil-pale), var(--soleil) 50%, var(--soleil-hot));
+  box-shadow: 0 0 60px rgb(255 194 26 / 0.35);
+}
+.swatchName {
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+.swatchHex {
+  font-size: var(--t-small);
+  color: var(--creme-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.chapterMedia {
+  position: relative;
+  padding-bottom: 14%;
+}
+.mainPhoto > div {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-l);
+}
+.sidePhoto {
+  position: absolute;
+  right: -4%;
+  bottom: 0;
+  width: 42%;
+}
+.chapter[data-side='right'] .sidePhoto {
+  right: auto;
+  left: -4%;
+}
+.sidePhoto > div {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: 0 0 0 8px var(--charbon);
+}
+
+/* Close-ups */
+.closeTitle {
+  font-weight: 800;
+  font-stretch: 62%;
+  text-transform: uppercase;
+  font-size: var(--t-xxl);
+  line-height: 0.84;
+  margin-bottom: clamp(36px, 5vw, 80px);
+}
+.closeTitle :global(.serif) {
+  font-size: 0.8em;
+}
+.closeGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: clamp(12px, 1.6vw, 24px);
+}
+.zoom {
+  position: relative;
+  border-radius: var(--radius-l);
+  overflow: hidden;
+}
+.zoom:nth-child(2) {
+  margin-top: 18%;
+}
+.zoomPic {
+  aspect-ratio: 3 / 4;
+}
+.zoomPic img {
+  transform: scale(1.15);
+  will-change: transform;
+}
+.zoomLabel {
+  position: absolute;
+  left: 18px;
+  bottom: 16px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--t-m);
+  text-shadow: 0 2px 16px rgb(0 0 0 / 0.6);
+}
+
+@media (max-width: 960px) {
+  .chapterGrid {
+    grid-template-columns: 1fr;
+  }
+  .chapter[data-side='right'] .chapterText {
+    order: 0;
+  }
+  .closeGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .zoom:first-child {
+    grid-column: 1 / -1;
+  }
+  .zoom:first-child .zoomPic {
+    aspect-ratio: 4 / 3;
+  }
+  .zoom:nth-child(2) {
+    margin-top: 0;
+  }
+}

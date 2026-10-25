@@ -1,0 +1,65 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  visibility: hidden;
+  overflow: hidden;
+}
+.root[data-active='true'] {
+  visibility: visible;
+  pointer-events: all;
+}
+
+.veil {
+  position: absolute;
+  inset: -2px 0;
+  background: var(--soleil);
+  transform: translateY(100%);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 62%;
+  height: 1px;
+  background: rgb(12 11 9 / 0.35);
+}
+
+.word {
+  font-weight: 800;
+  font-stretch: 62%;
+  text-transform: uppercase;
+  font-size: clamp(3rem, 12vw, 10rem);
+  line-height: 0.85;
+  color: var(--charbon);
+  letter-spacing: -0.01em;
+}
+.word :global(.serif) {
+  font-size: 1.05em;
+}
+
+.sun {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 70vmax;
+  aspect-ratio: 1;
+  margin-left: -35vmax;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, #fff3c4 0%, var(--soleil-pale) 18%, var(--soleil) 42%, var(--soleil-hot) 70%);
+  opacity: 0;
+  will-change: transform;
+}
+.sun::before {
+  content: '';
+  position: absolute;
+  inset: -35%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 176 0 / 0.45), rgb(255 194 26 / 0.12) 55%, transparent);
+  z-index: -1;
+}

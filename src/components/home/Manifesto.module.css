@@ -1,0 +1,77 @@
+.manifesto {
+  overflow: hidden;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(0, 4fr);
+  gap: 32px clamp(24px, 4vw, 72px);
+  position: relative;
+}
+
+.label {
+  padding-top: 0.9em;
+}
+.num {
+  color: var(--soleil);
+  margin-right: 6px;
+}
+
+.text {
+  font-weight: 700;
+  font-stretch: 80%;
+  font-size: clamp(2rem, 4.6vw, 5rem);
+  line-height: 1.02;
+  letter-spacing: -0.012em;
+  max-width: 19ch;
+  text-wrap: balance;
+}
+.word {
+  display: inline;
+}
+
+.stamp {
+  position: absolute;
+  right: var(--gutter);
+  bottom: -12%;
+  width: clamp(150px, 17vw, 260px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+.disc {
+  width: 64%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--line-strong);
+}
+.disc img {
+  transform: scale(1.5);
+}
+.ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: var(--soleil);
+  font-size: 13.5px;
+  font-weight: 700;
+  font-stretch: 112%;
+  letter-spacing: 0.28em;
+}
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .label {
+    padding-top: 0;
+  }
+  .stamp {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    justify-self: end;
+    margin-top: 8px;
+  }
+}

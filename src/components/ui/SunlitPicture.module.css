@@ -1,0 +1,87 @@
+@property --sx {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 50%;
+}
+@property --sy {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 45%;
+}
+@property --sr {
+  syntax: '<length-percentage>';
+  inherits: true;
+  initial-value: 0%;
+}
+
+.sunlit {
+  --sx: 50%;
+  --sy: 45%;
+  --sr: 0%;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: --sr 0.9s var(--ease-out);
+}
+.sunlit[data-lit='true'] {
+  --sr: 34%;
+}
+.sunlit[data-auto='true'] {
+  --sr: 42%;
+  animation: wander 14s ease-in-out infinite alternate;
+}
+@keyframes wander {
+  0% {
+    --sx: 22%;
+    --sy: 30%;
+  }
+  33% {
+    --sx: 70%;
+    --sy: 55%;
+  }
+  66% {
+    --sx: 45%;
+    --sy: 70%;
+  }
+  100% {
+    --sx: 78%;
+    --sy: 28%;
+  }
+}
+
+.base {
+  position: absolute;
+  inset: 0;
+}
+.sunlit > .base img {
+  filter: brightness(0.62) saturate(0.9);
+  transition: filter 0.9s;
+}
+
+.lit {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image: radial-gradient(circle at var(--sx) var(--sy), #000 0, #000 calc(var(--sr) * 0.35), transparent var(--sr));
+  mask-image: radial-gradient(circle at var(--sx) var(--sy), #000 0, #000 calc(var(--sr) * 0.35), transparent var(--sr));
+}
+.lit img {
+  filter: brightness(1.12) saturate(1.12) contrast(1.02);
+}
+
+.flare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--sx) var(--sy), rgb(255 200 90 / 0.22), transparent calc(var(--sr) * 0.9));
+  mix-blend-mode: screen;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sunlit > .base img {
+    filter: none;
+  }
+  .lit,
+  .flare {
+    display: none;
+  }
+}

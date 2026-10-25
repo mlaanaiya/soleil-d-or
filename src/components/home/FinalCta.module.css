@@ -1,0 +1,52 @@
+.cta {
+  padding-block: clamp(40px, 6vw, 80px);
+}
+.inner {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 32px;
+  padding: clamp(72px, 12vw, 180px) var(--gutter);
+  border-radius: clamp(28px, 4vw, 56px);
+  background: var(--soleil);
+  color: var(--charbon);
+  text-align: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+.sun {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 90%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -32%);
+  background: radial-gradient(circle at 50% 30%, var(--soleil-pale), var(--soleil-hot) 55%, #f08a00);
+  z-index: -1;
+}
+.title {
+  font-weight: 800;
+  font-stretch: 62%;
+  text-transform: uppercase;
+  font-size: var(--t-xxl);
+  line-height: 0.84;
+  max-width: 11ch;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.secondary {
+  --btn-bg: transparent;
+  --btn-fg: var(--charbon);
+  box-shadow: inset 0 0 0 1.5px var(--charbon);
+}
+.secondary::before {
+  background: var(--charbon);
+}
+.secondary:hover {
+  color: var(--creme);
+}

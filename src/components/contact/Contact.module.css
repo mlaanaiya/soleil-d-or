@@ -1,0 +1,233 @@
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  font-weight: 600;
+  font-size: var(--t-small);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: clamp(40px, 6vw, 110px);
+  padding-block: clamp(40px, 5vw, 80px);
+}
+.block {
+  display: grid;
+  gap: 28px;
+  align-content: start;
+}
+.address {
+  font-style: normal;
+  display: grid;
+  font-weight: 800;
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: var(--t-l);
+  line-height: 0.95;
+}
+.pending {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--t-m);
+  line-height: 1.2;
+  color: var(--creme-2);
+  max-width: 26ch;
+}
+.routes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.contactLines {
+  display: grid;
+  gap: 18px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.bigLink {
+  display: grid;
+  gap: 6px;
+  font-weight: 700;
+  font-stretch: 80%;
+  font-size: var(--t-m);
+  transition: color 0.3s;
+}
+.bigLink:hover {
+  color: var(--soleil);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chips li {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgb(255 194 26 / 0.1);
+  color: var(--soleil);
+  font-size: var(--t-small);
+  font-weight: 700;
+}
+.socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-weight: 600;
+}
+
+.hoursCard {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+  padding: clamp(24px, 3vw, 44px);
+  border-radius: var(--radius-l);
+  background: var(--charbon-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.week {
+  display: grid;
+}
+.day {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 12px;
+  margin-inline: -12px;
+  border-radius: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.day dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--creme-2);
+}
+.day dd {
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.day[data-today='true'] {
+  background: rgb(255 194 26 / 0.1);
+  border-bottom-color: transparent;
+}
+.day[data-today='true'] dt,
+.day[data-today='true'] dd {
+  color: var(--soleil);
+}
+.todayTag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--soleil);
+  color: var(--charbon);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.exceptions {
+  display: grid;
+  gap: 10px;
+}
+.exceptions li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.9375rem;
+}
+.note {
+  font-size: var(--t-small);
+  color: var(--creme-dim);
+}
+
+.mapSection {
+  padding-bottom: var(--section);
+}
+.map {
+  position: relative;
+  height: clamp(320px, 50vw, 560px);
+  border-radius: var(--radius-l);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--line);
+  background:
+    radial-gradient(circle at 50% 50%, rgb(255 194 26 / 0.18), transparent 40%),
+    repeating-linear-gradient(0deg, transparent 0 39px, rgb(245 237 220 / 0.04) 39px 40px),
+    repeating-linear-gradient(90deg, transparent 0 39px, rgb(245 237 220 / 0.04) 39px 40px),
+    var(--charbon-2);
+}
+.mapFrame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  filter: grayscale(1) invert(0.92) sepia(0.35) hue-rotate(8deg) contrast(0.92) brightness(0.95);
+}
+.mapFacade {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+}
+.mapPin,
+.mapEmpty .mapPin {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--soleil);
+  box-shadow:
+    0 0 0 10px rgb(255 194 26 / 0.15),
+    0 0 0 24px rgb(255 194 26 / 0.06);
+  animation: ping 2.4s var(--ease-out) infinite;
+}
+@keyframes ping {
+  50% {
+    box-shadow:
+      0 0 0 16px rgb(255 194 26 / 0.12),
+      0 0 0 36px rgb(255 194 26 / 0.03);
+  }
+}
+.mapLabel {
+  font-weight: 800;
+  font-stretch: 70%;
+  text-transform: uppercase;
+  font-size: var(--t-m);
+}
+.mapFacade:hover .mapLabel {
+  color: var(--soleil);
+}
+.mapNote {
+  font-size: var(--t-small);
+  color: var(--creme-dim);
+}
+.mapCredit {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  font-size: 11px;
+  color: var(--creme-dim);
+  background: rgb(12 11 9 / 0.7);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.mapEmpty {
+  display: grid;
+  justify-items: center;
+  gap: 20px;
+  padding: clamp(48px, 8vw, 110px) 24px;
+  border-radius: var(--radius-l);
+  border: 1px dashed var(--line-strong);
+  text-align: center;
+  color: var(--creme-2);
+}
+
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,109 @@
+.hero {
+  position: relative;
+  padding-top: calc(var(--header-h) + clamp(48px, 9vw, 140px));
+  padding-bottom: clamp(40px, 5vw, 72px);
+  overflow: hidden;
+}
+.glow {
+  position: absolute;
+  left: 50%;
+  top: 70%;
+  width: min(90vw, 1100px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -10%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 176 0 / 0.2), rgb(232 87 42 / 0.06) 55%, transparent);
+  pointer-events: none;
+  animation: glowIn 2s var(--ease-out) both;
+}
+@keyframes glowIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20%);
+  }
+}
+
+.inner {
+  position: relative;
+  display: grid;
+  gap: 24px;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  animation: fade 0.8s var(--ease-out) 0.2s both;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--soleil);
+  box-shadow: 0 0 12px var(--soleil);
+}
+
+.title {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0 0.25em;
+  font-weight: 800;
+  font-stretch: 62%;
+  text-transform: uppercase;
+  font-size: var(--t-xxl);
+  line-height: 0.82;
+}
+.mask {
+  display: block;
+  overflow: hidden;
+  padding-top: 0.04em;
+}
+.word {
+  display: block;
+  animation: rise 1.2s var(--ease-out) 0.15s both;
+}
+.accent {
+  color: var(--soleil);
+  font-size: 0.5em;
+  line-height: 1.1;
+  text-transform: none;
+  padding-bottom: 0.05em;
+  animation: fade 1s var(--ease-out) 0.7s both;
+}
+.horizon {
+  height: 1px;
+  background: linear-gradient(90deg, var(--soleil), rgb(255 194 26 / 0.15) 60%, transparent);
+  transform-origin: left;
+  animation: draw 1.4s var(--ease-in-out) 0.3s both;
+}
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: end;
+  gap: 24px;
+  animation: fade 1s var(--ease-out) 0.6s both;
+}
+.intro {
+  font-size: var(--t-s);
+  color: var(--creme-2);
+  max-width: 46ch;
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(105%);
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes draw {
+  from {
+    transform: scaleX(0);
+  }
+}

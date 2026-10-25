@@ -1,0 +1,529 @@
+@property --px {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+@property --py {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+@property --lx {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 50%;
+}
+@property --ly {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 40%;
+}
+
+.hero {
+  --horizon: 68%;
+  --title-base: var(--horizon);
+  --title-size: min(25vw, 48svh);
+  --ph: min(46svh, 34vw);
+  --sun: min(46vw, 72svh);
+  position: relative;
+  height: 100svh;
+  min-height: 640px;
+  max-height: 1200px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+}
+.stage[data-auto='true'] {
+  animation: drift 11s ease-in-out infinite alternate;
+}
+@keyframes drift {
+  0% {
+    --px: -0.5;
+    --py: -0.2;
+    --lx: 25%;
+    --ly: 30%;
+  }
+  50% {
+    --px: 0.3;
+    --py: 0.3;
+    --lx: 70%;
+    --ly: 45%;
+  }
+  100% {
+    --px: 0.6;
+    --py: -0.3;
+    --lx: 55%;
+    --ly: 25%;
+  }
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(calc(var(--px) * var(--depth) * -28px), calc(var(--py) * var(--depth) * -16px), 0);
+  will-change: transform;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 50% at 50% var(--horizon), rgb(255 176 0 / 0.22), transparent 70%),
+    radial-gradient(90% 60% at 50% 100%, rgb(232 87 42 / 0.12), transparent 70%),
+    linear-gradient(to bottom, var(--charbon) 0%, #15110b var(--horizon), #0f0d0a 100%);
+}
+
+/* The sun rises from the horizon behind the title; its layer is cut at the horizon line. */
+.sunLayer {
+  clip-path: inset(-20% -20% calc(100% - var(--horizon)) -20%);
+}
+.sun {
+  position: absolute;
+  left: 50%;
+  top: var(--horizon);
+  width: var(--sun);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, #fff4c8 0%, var(--soleil-pale) 16%, var(--soleil) 42%, var(--soleil-hot) 72%, #f08a00 100%);
+  transform: translate(-50%, -58%);
+  animation: sunrise 2s var(--ease-out) 0.25s both;
+}
+.sun::before {
+  content: '';
+  position: absolute;
+  inset: -45%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 176 0 / 0.42), rgb(255 150 20 / 0.16) 45%, transparent 100%);
+  z-index: -1;
+}
+@keyframes sunrise {
+  from {
+    transform: translate(-50%, 0%) scale(0.86);
+    filter: brightness(0.7);
+  }
+  to {
+    transform: translate(-50%, -58%) scale(1);
+    filter: none;
+  }
+}
+
+.title {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  pointer-events: none;
+}
+.title .layer {
+  display: block;
+}
+.word {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% - var(--title-base));
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  font-weight: 800;
+  font-stretch: 62%;
+  text-transform: uppercase;
+  font-size: var(--title-size);
+  line-height: 0.76;
+  letter-spacing: -0.012em;
+  color: var(--creme);
+  padding-top: 0.04em;
+}
+.letter {
+  display: inline-block;
+  animation: rise 1.3s var(--ease-out) both;
+  animation-delay: calc(0.55s + var(--i) * 0.075s);
+}
+@keyframes rise {
+  from {
+    transform: translate3d(0, 102%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--horizon);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(255 194 26 / 0.7) 20%, rgb(255 194 26 / 0.9) 50%, rgb(255 194 26 / 0.7) 80%, transparent);
+  transform-origin: 50% 50%;
+  animation: draw 1.2s var(--ease-in-out) 0.05s both;
+}
+@keyframes draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Products sit on the horizon, in front of the title. */
+.products {
+  pointer-events: none;
+}
+.productsIntro {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - var(--horizon) - 4.5%);
+  height: var(--ph);
+  width: min(calc(var(--ph) * 1.9), 64vw);
+  transform: translateX(-50%);
+  animation: productIn 1.5s var(--ease-out) 1.05s both;
+}
+@keyframes productIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16%) scale(0.88);
+    filter: blur(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%);
+    filter: none;
+  }
+}
+
+.product {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: grid;
+  place-items: end center;
+  opacity: 0;
+  transform: translate3d(0, 16%, 0) scale(0.9);
+  filter: blur(10px);
+  transition:
+    opacity 0.8s var(--ease-out),
+    transform 1.3s var(--ease-out),
+    filter 0.9s var(--ease-out);
+}
+.product[data-active='true'] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition-delay: 0.25s;
+}
+
+.tilt {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  height: fit-content;
+  max-height: 100%;
+  transform: perspective(1400px) rotateY(calc(var(--px) * 7deg)) rotateX(calc(var(--py) * -5deg));
+  transform-style: preserve-3d;
+}
+.tilt img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: var(--ph);
+  object-fit: contain;
+  filter: drop-shadow(0 30px 40px rgb(0 0 0 / 0.45)) brightness(0.9);
+}
+
+/* Signature n°1 — « La lumière » : the pointer is a sun that relights the food, masked to its silhouette. */
+.light {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--lx) var(--ly),
+    rgb(255 244 200 / 0.95) 0%,
+    rgb(255 200 80 / 0.5) 18%,
+    rgb(255 170 30 / 0.12) 38%,
+    transparent 55%
+  );
+  mix-blend-mode: overlay;
+  -webkit-mask-image: var(--mask);
+  mask-image: var(--mask);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  pointer-events: none;
+}
+
+.shadow {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -4%;
+  height: 12%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.7), transparent);
+  z-index: -1;
+}
+
+.accent {
+  position: absolute;
+  left: 61%;
+  top: calc(var(--horizon) - 3%);
+  font-size: clamp(3.4rem, 9.5vw, 10rem);
+  line-height: 1;
+  color: var(--soleil);
+  text-shadow: 0 10px 40px rgb(0 0 0 / 0.45);
+  transform: translate3d(calc(var(--px) * -40px), calc(var(--py) * -22px), 0) rotate(-6deg);
+  animation: accentIn 1.2s var(--ease-out) 1.55s both;
+  pointer-events: none;
+}
+@keyframes accentIn {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 -10% 0 0);
+  }
+}
+
+/* Meta layer */
+.meta {
+  position: absolute;
+  inset: calc(var(--header-h) + 18px) var(--gutter) calc(28px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+  animation: fadeUp 1s var(--ease-out) 1.9s both;
+}
+.meta a,
+.meta button {
+  pointer-events: auto;
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--creme-2);
+}
+.kickerDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--soleil);
+  box-shadow: 0 0 14px var(--soleil);
+}
+
+.bottom {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 24px;
+}
+.tagline {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.5rem, 2.4vw, 2.3rem);
+  line-height: 1.05;
+  max-width: 14ch;
+  color: var(--creme);
+}
+
+.switcher {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+}
+.caption {
+  display: grid;
+  gap: 3px;
+  animation: captionIn 0.9s var(--ease-out) both;
+  border-radius: 8px;
+}
+@keyframes captionIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(4px);
+  }
+}
+.captionIndex {
+  font-size: var(--t-micro);
+  letter-spacing: 0.2em;
+  color: var(--soleil);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.captionName {
+  font-weight: 800;
+  font-stretch: 72%;
+  text-transform: uppercase;
+  font-size: 1.35rem;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+.caption:hover .captionName {
+  color: var(--soleil);
+}
+.captionMeta {
+  font-size: var(--t-small);
+  color: var(--creme-dim);
+}
+.dots {
+  display: flex;
+  gap: 8px;
+}
+.dot {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  display: grid;
+  align-items: center;
+}
+.dot::before {
+  content: '';
+  height: 2px;
+  border-radius: 2px;
+  background: var(--line-strong);
+}
+.dotFill {
+  position: absolute;
+  left: 0;
+  top: 11px;
+  height: 2px;
+  width: 100%;
+  border-radius: 2px;
+  background: var(--soleil);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.dot[aria-pressed='true'] .dotFill {
+  transform: scaleX(1);
+}
+.dotFill[data-running='true'] {
+  animation: progress 6.5s linear both;
+}
+@keyframes progress {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.ctas {
+  justify-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.scrollCue {
+  position: absolute;
+  left: var(--gutter);
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--t-micro);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--creme-dim);
+  writing-mode: vertical-rl;
+  animation: fadeUp 1s var(--ease-out) 2.3s both;
+}
+.scrollLine {
+  width: 1px;
+  height: 56px;
+  background: linear-gradient(var(--soleil), transparent);
+  animation: scrollLine 2.2s var(--ease-in-out) infinite;
+  transform-origin: top;
+}
+@keyframes scrollLine {
+  0% {
+    transform: scaleY(0);
+  }
+  50% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  51% {
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
+
+@media (max-width: 960px) {
+  .hero {
+    --horizon: 62%;
+    --ph: min(40svh, 52vw);
+    --sun: 64vw;
+  }
+  .accent {
+    left: auto;
+    right: var(--gutter);
+  }
+  .bottom {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    gap: 18px;
+  }
+  .switcher {
+    justify-items: start;
+    text-align: left;
+    order: -1;
+  }
+  .ctas {
+    justify-self: stretch;
+    justify-content: flex-start;
+  }
+  .scrollCue {
+    display: none;
+  }
+}
+
+/* Phones: the title stands above the product instead of behind it. */
+@media (max-width: 760px) {
+  .hero {
+    --horizon: 61%;
+    --title-base: 35%;
+    --title-size: 31vw;
+    --ph: min(34svh, 70vw);
+    --sun: 80vw;
+    min-height: 620px;
+  }
+  .productsIntro {
+    width: 92vw;
+  }
+  .accent {
+    top: calc(var(--horizon) - 1%);
+    font-size: 16vw;
+  }
+  .tagline {
+    display: none;
+  }
+  .ctas :global(.btn) {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer,
+  .tilt,
+  .accent {
+    transform: none;
+  }
+  .product:not([data-active='true']) {
+    display: none;
+  }
+}

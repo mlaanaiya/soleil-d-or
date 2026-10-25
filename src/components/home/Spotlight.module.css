@@ -1,0 +1,128 @@
+.spotlight {
+  position: relative;
+  height: 100svh;
+  min-height: 620px;
+  overflow: hidden;
+}
+
+.frames {
+  position: absolute;
+  inset: 0;
+}
+.frame {
+  position: absolute;
+  inset: 0;
+  clip-path: circle(75% at 50% 50%);
+}
+.photo {
+  position: absolute;
+  inset: 0;
+}
+.shade {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background:
+    linear-gradient(to top, rgb(12 11 9 / 0.88) 0%, rgb(12 11 9 / 0.15) 45%, transparent 70%),
+    linear-gradient(to right, rgb(12 11 9 / 0.55), transparent 50%);
+}
+
+.title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  z-index: 11;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+.titleWord {
+  display: block;
+  font-weight: 800;
+  font-stretch: 62%;
+  text-transform: uppercase;
+  font-size: clamp(3.4rem, 12vw, 13rem);
+  line-height: 0.84;
+  text-align: center;
+  color: var(--creme);
+  mix-blend-mode: difference;
+  transform-origin: 50% 50%;
+  max-width: 9ch;
+}
+
+.panel {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: clamp(28px, 6vh, 64px);
+  z-index: 12;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 18px 48px;
+}
+.panel > :first-child {
+  grid-column: 1 / -1;
+}
+.text {
+  font-size: var(--t-s);
+  line-height: 1.45;
+  max-width: 38ch;
+  color: var(--creme);
+}
+.links {
+  display: grid;
+  border-top: 1px solid var(--line-strong);
+}
+.link {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line-strong);
+  font-weight: 800;
+  font-stretch: 70%;
+  text-transform: uppercase;
+  font-size: clamp(1.3rem, 2vw, 1.9rem);
+  transition:
+    color 0.3s,
+    padding 0.5s var(--ease-out);
+}
+.link:hover {
+  color: var(--soleil);
+  padding-left: 10px;
+}
+.linkMeta {
+  font-family: var(--font-sans);
+  font-size: var(--t-small);
+  font-weight: 600;
+  font-stretch: 100%;
+  text-transform: none;
+  color: var(--creme-2);
+}
+
+@media (max-width: 760px) {
+  .spotlight {
+    min-height: 680px;
+  }
+  .panel {
+    grid-template-columns: 1fr;
+  }
+  .titleWord {
+    font-size: 17vw;
+  }
+  .title {
+    top: 32%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame:not(:first-child) {
+    display: none;
+  }
+}

@@ -1,0 +1,99 @@
+.rail {
+  --progress: 0;
+  position: relative;
+  padding-block: clamp(64px, 8vw, 120px);
+  overflow: hidden;
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 3vw, 56px);
+  padding-inline: var(--gutter);
+  width: max-content;
+  min-height: 100svh;
+  will-change: transform;
+}
+
+.head {
+  flex: none;
+  width: clamp(300px, 30vw, 480px);
+  display: grid;
+  gap: 22px;
+  align-content: center;
+  justify-items: start;
+}
+.title {
+  font-weight: 800;
+  font-stretch: 62%;
+  text-transform: uppercase;
+  font-size: clamp(3rem, 5.6vw, 6.4rem);
+  line-height: 0.86;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.intro {
+  color: var(--creme-2);
+  max-width: 30ch;
+}
+.progress {
+  width: 100%;
+  height: 1px;
+  background: var(--line-strong);
+  margin-top: 12px;
+}
+.progress span {
+  display: block;
+  height: 100%;
+  background: var(--soleil);
+  transform-origin: left;
+  transform: scaleX(var(--progress));
+}
+
+.list {
+  display: flex;
+  gap: clamp(16px, 2vw, 32px);
+}
+.item {
+  flex: none;
+  width: clamp(280px, 25vw, 400px);
+}
+.item:nth-child(even) {
+  transform: translateY(8%);
+}
+
+/* Native carousel on touch / narrow screens. */
+@media (max-width: 960px), (hover: none) {
+  .track {
+    display: block;
+    width: auto;
+    min-height: 0;
+    padding: 0;
+  }
+  .head {
+    width: auto;
+    padding-inline: var(--gutter);
+    margin-bottom: 36px;
+  }
+  .progress {
+    display: none;
+  }
+  .list {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 8px var(--gutter) 24px;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .list::-webkit-scrollbar {
+    display: none;
+  }
+  .item {
+    width: min(78vw, 340px);
+    scroll-snap-align: start;
+  }
+  .item:nth-child(even) {
+    transform: none;
+  }
+}
