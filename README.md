@@ -86,7 +86,7 @@ Sans `DATABASE_URL`, la base embarquée est conservée dans le volume `/data`. A
 
 ### Sauvegardes
 
-Supabase sauvegarde la base quotidiennement (offre gratuite : 7 jours de rétention, restauration depuis le tableau de bord). Pour une copie complète (photos comprises, elles sont dans la base) :
+Les sauvegardes automatiques quotidiennes de Supabase sont réservées aux offres payantes : sur l’offre gratuite, faites une copie régulière (photos comprises, elles sont dans la base) :
 
 ```bash
 pg_dump "postgres://soleil_app.<ref>:<mot de passe>@aws-…-eu-west-3.pooler.supabase.com:5432/postgres" \
