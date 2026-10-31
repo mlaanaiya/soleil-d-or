@@ -52,8 +52,22 @@ const plate = (file: string | undefined, slug: string, name: string, alt?: strin
 })
 
 const PRODUCTS: SeedProduct[] = [
-  { slug: 'burger-classique', name: 'Burger classique', category: 'burgers', prices: trio('3,00', '7,00', '8,50') },
-  { slug: 'cheeseburger', name: 'Cheeseburger', category: 'burgers', prices: trio('3,50', '7,00', '8,50') },
+  {
+    slug: 'burger-classique',
+    name: 'Burger classique',
+    category: 'burgers',
+    prices: trio('3,00', '7,00', '8,50'),
+    file: 'burger-classique',
+    alt: 'Burger classique',
+  },
+  {
+    slug: 'cheeseburger',
+    name: 'Cheeseburger',
+    category: 'burgers',
+    prices: trio('3,50', '7,00', '8,50'),
+    file: 'cheeseburger',
+    alt: 'Cheeseburger au cheddar fondu',
+  },
   {
     slug: 'double-steak',
     name: 'Double steak',
@@ -75,7 +89,14 @@ const PRODUCTS: SeedProduct[] = [
     cutout: true,
     featured: true,
   },
-  { slug: 'tacos-double', name: 'Tacos double', category: 'tacos', prices: trio('8,50', '10,00', '12,00') },
+  {
+    slug: 'tacos-double',
+    name: 'Tacos double',
+    category: 'tacos',
+    prices: trio('8,50', '10,00', '12,00'),
+    file: 'tacos-double',
+    alt: 'Tacos double grillé, coupé en deux',
+  },
   {
     slug: 'naan-garni',
     name: 'Naan garni',
@@ -95,8 +116,15 @@ const PRODUCTS: SeedProduct[] = [
     alt: 'Panini grillé garni',
     cutout: true,
   },
-  { slug: 'panini-3-fromages', name: 'Panini 3 fromages', category: 'naans-paninis', prices: trio('3,00', '4,50') },
-  plate(undefined, 'assiette-kebab', 'Kebab'),
+  {
+    slug: 'panini-3-fromages',
+    name: 'Panini 3 fromages',
+    category: 'naans-paninis',
+    prices: trio('3,00', '4,50'),
+    file: 'panini-3-fromages',
+    alt: 'Panini grillé aux trois fromages fondus',
+  },
+  plate('assiette-kebab-frites-et-salade', 'assiette-kebab', 'Kebab', 'Kebab, frites et salade'),
   plate('koftas-grilles-frites-et-salade', 'assiette-kefta', 'Kefta', 'Kefta grillées, frites et salade'),
   plate('steaks-grilles-frites-et-salade', 'assiette-steak', 'Steak', 'Steaks grillés, frites et salade'),
   plate(
@@ -188,6 +216,8 @@ const PRODUCTS: SeedProduct[] = [
     slug: 'barquette-nuggets',
     name: 'Barquette nuggets',
     category: 'accompagnements',
+    file: 'barquette-nuggets',
+    alt: 'Barquette de nuggets dorés',
     prices: [
       ['5 pièces', '3,00'],
       ['10 pièces', '6,00'],
@@ -197,6 +227,8 @@ const PRODUCTS: SeedProduct[] = [
     slug: 'barquette-tenders',
     name: 'Barquette tenders',
     category: 'accompagnements',
+    file: 'barquette-tenders',
+    alt: 'Barquette de tenders croustillants',
     prices: [
       ['5 pièces', '7,50'],
       ['10 pièces', '15,00'],
@@ -206,6 +238,8 @@ const PRODUCTS: SeedProduct[] = [
     slug: 'barquette-wings',
     name: 'Barquette wings',
     category: 'accompagnements',
+    file: 'barquette-wings',
+    alt: 'Barquette de wings rôtis',
     prices: [
       ['5 pièces', '3,50'],
       ['10 pièces', '7,00'],
@@ -232,12 +266,32 @@ const PRODUCTS: SeedProduct[] = [
     alt: 'Naans grillés sur fond anthracite',
     cutout: true,
   },
-  { slug: 'naan-fromage', name: 'Naan fromage', category: 'accompagnements', prices: [['', '2,00']] },
-  { slug: 'soda', name: 'Soda 33 cl', category: 'boissons', prices: [['', '2,00']] },
+  {
+    slug: 'naan-fromage',
+    name: 'Naan fromage',
+    category: 'accompagnements',
+    prices: [['', '2,00']],
+    file: 'naan-fromage',
+    alt: 'Naan au fromage fondu',
+  },
+  {
+    slug: 'soda',
+    name: 'Soda 33 cl',
+    category: 'boissons',
+    prices: [['', '2,00']],
+    file: 'soda-33cl',
+    alt: 'Canette de soda 33 cl',
+  },
   { slug: 'eau', name: 'Eau 50 cl', category: 'boissons', prices: [['', '1,50']] },
   { slug: 'cafe', name: 'Café', category: 'boissons', prices: [['', '1,50']] },
   { slug: 'patisserie', name: 'Pâtisserie', category: 'boissons', prices: [['', '2,00']] },
-  { slug: 'menu-enfant', name: 'Menu enfant', category: 'menu-enfant', prices: [['', '7,00']] },
+  {
+    slug: 'menu-enfant',
+    name: 'Menu enfant',
+    category: 'menu-enfant',
+    prices: [['', '7,00']],
+    description: '4 nuggets ou steak haché, frites et Capri-Sun.',
+  },
 ]
 
 const cents = (euros: string) => Math.round(Number(euros.replace(',', '.')) * 100)
