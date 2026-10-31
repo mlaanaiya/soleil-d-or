@@ -73,4 +73,6 @@ Dix visuels ont été ajoutés pour les produits de la carte qui n'avaient pas d
 | `barquette-wings.jpg`                 | Barquette wings   |
 | `soda-33cl.jpg`                       | Soda 33 cl        |
 
-Ces images illustrent les produits : elles doivent rester fidèles à ce qui est réellement servi (portion, garniture). Dès que possible, remplacez-les par de vraies photos depuis l'administration. Restent sans visuel : eau, café, pâtisserie et menu enfant.
+Quatre autres (`eau-50cl.jpg`, `cafe-expresso.jpg`, `patisserie-orientale.jpg`, `menu-enfant-nuggets-frites-capri-sun.jpg`) ont été livrées en très basse définition (250 à 390 px de large) : elles ont été recadrées, agrandies et replacées sur un fond anthracite. Elles conviennent au site, pas à l'impression.
+
+Ces images illustrent les produits : elles doivent rester fidèles à ce qui est réellement servi (portion, garniture). Dès que possible, remplacez-les par de vraies photos depuis l'administration.
