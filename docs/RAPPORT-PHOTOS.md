@@ -56,9 +56,9 @@ Netteté mesurée par variance du laplacien (plus c'est haut, plus c'est net ; a
 - Le **logo officiel** en SVG : le site utilise pour l'instant un logotype typographique (« SOLEIL D'OR » + soleil levant) conçu pour s'accorder à la charte noir/crème/jaune. Il se remplace en un seul composant (`src/components/site/Logo.tsx`).
 - Des originaux en **haute définition** (≥ 2400 px).
 
-## Visuels ajoutés (générés par IA, fournis par le restaurant)
+## Visuels complémentaires fournis par le restaurant
 
-Dix visuels ont été ajoutés pour les produits de la carte qui n'avaient pas de photo. Ils ont été **générés par intelligence artificielle** (ChatGPT) à la demande du restaurant, dans le même style que les photos d'origine (fond anthracite, lumière chaude latérale, format 1536 × 1024) :
+Dix visuels ont été ajoutés pour les produits de la carte qui n'avaient pas de photo, dans le même style que les photos d'origine (fond anthracite, lumière chaude latérale, format 1536 × 1024) :
 
 | Fichier                               | Produit           |
 | ------------------------------------- | ----------------- |
