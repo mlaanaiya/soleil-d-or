@@ -10,6 +10,8 @@ import { dataDir } from './paths'
  * - With `DATABASE_URL` (production: Supabase through its pooler), the `postgres` driver is used.
  * - Without it (local development, tests, simple self-hosting), an embedded PostgreSQL (PGlite)
  *   persisted in `DATA_DIR/pglite` is used, so the very same SQL runs everywhere.
+ * - With `PGLITE_SNAPSHOT` (demo deployments), PGlite runs in memory from a snapshot built with the
+ *   site (`npm run db:snapshot`): no external database; changes last until the instance recycles.
  *
  * Migrations are append-only: never edit a released entry, add a new one at the end.
  */
@@ -162,6 +164,7 @@ interface Driver extends Queryable {
   exec(text: string): Promise<void>
   transaction<T>(fn: (q: Queryable) => Promise<T>): Promise<T>
   close(): Promise<void>
+  dump?(): Promise<Blob>
 }
 
 /* ------------------------------- Drivers ------------------------------- */
@@ -191,10 +194,15 @@ async function postgresDriver(url: string): Promise<Driver> {
   }
 }
 
-async function pgliteDriver(dir: string): Promise<Driver> {
+async function pgliteDriver(source: { dir: string } | { snapshot: string }): Promise<Driver> {
   const { PGlite } = await import('@electric-sql/pglite')
-  fs.mkdirSync(dir, { recursive: true })
-  const pg = await PGlite.create(dir)
+  let pg
+  if ('snapshot' in source) {
+    pg = await PGlite.create({ loadDataDir: new Blob([fs.readFileSync(source.snapshot)]) })
+  } else {
+    fs.mkdirSync(source.dir, { recursive: true })
+    pg = await PGlite.create(source.dir)
+  }
   type Q = Pick<typeof pg, 'query'>
   const run = (q: Q) => async (text: string, params?: unknown[]) => (await q.query(text, params)).rows
   return {
@@ -207,6 +215,7 @@ async function pgliteDriver(dir: string): Promise<Driver> {
         fn({ query: <U>(text: string, params?: unknown[]) => run(tx)(text, params) as Promise<U[]> }),
       ),
     close: () => pg.close(),
+    dump: () => pg.dumpDataDir('gzip'),
   }
 }
 
@@ -243,9 +252,20 @@ function splitStatements(sql: string): string[] {
 
 const globalForDb = globalThis as unknown as { __soleilDb?: Promise<Driver> }
 
+/** The demo snapshot shipped with the build (resolved from the app root). */
+export function snapshotPath(): string | null {
+  const file = process.env.PGLITE_SNAPSHOT
+  return file ? path.resolve(/*turbopackIgnore: true*/ process.cwd(), file) : null
+}
+
 async function open(): Promise<Driver> {
+  const snapshot = snapshotPath()
   const url = process.env.DATABASE_URL
-  const driver = url ? await postgresDriver(url) : await pgliteDriver(path.join(dataDir(), 'pglite'))
+  const driver = snapshot
+    ? await pgliteDriver({ snapshot })
+    : url
+      ? await postgresDriver(url)
+      : await pgliteDriver({ dir: path.join(dataDir(), 'pglite') })
   await migrate(driver)
   return driver
 }
@@ -280,6 +300,14 @@ export async function schemaVersion(): Promise<number> {
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.length
 
 /** Closes the pool (scripts and tests). */
+/** Writes the current embedded database as a gzipped data-directory snapshot (PGlite only). */
+export async function dumpSnapshot(file: string) {
+  const current = await driver()
+  if (!current.dump) throw new Error('Snapshots need the embedded database (unset DATABASE_URL).')
+  fs.mkdirSync(path.dirname(file), { recursive: true })
+  fs.writeFileSync(file, Buffer.from(await (await current.dump()).arrayBuffer()))
+}
+
 export async function closeDb() {
   const current = globalForDb.__soleilDb
   globalForDb.__soleilDb = undefined

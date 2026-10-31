@@ -127,7 +127,7 @@ export const chapterSchema = z.object({ title: trimmed(80), text: trimmed(1200) 
 export const contentSchema = z.object({
   heroKicker: trimmed(60).default('Restauration rapide'),
   heroTagline: trimmed(140).default('Le goût en pleine lumière.'),
-  heroProducts: z.array(z.string()).max(4).default(['double-cheeseburger', 'naan-kebab', 'tacos-poulet']),
+  heroProducts: z.array(z.string()).max(4).default(['double-steak', 'naan-garni', 'tacos-simple']),
   manifesto: trimmed(600).default(
     'Sous le soleil, tout devient plus doré. Sandwichs, assiettes, tacos, burgers, crousty riz et bowls : chaque recette est mise en lumière, du premier coup d’œil à la dernière bouchée.',
   ),
@@ -138,7 +138,7 @@ export const contentSchema = z.object({
   spotlightText: trimmed(500).default(
     'Le croustillant rencontre le moelleux. Riz, frites, poulet croustillant, sauces : des bols généreux à composer du regard avant de les goûter.',
   ),
-  spotlightProducts: z.array(z.string()).max(3).default(['crousty-riz-poulet', 'bowl-gourmand']),
+  spotlightProducts: z.array(z.string()).max(3).default(['crousty-riz', 'bowl']),
   galleryTitle: trimmed(80).default('La galerie'),
   galleryIntro: trimmed(300).default('Nos recettes, photographiées en pleine lumière.'),
   restaurantTitle: trimmed(80).default('Notre restaurant'),

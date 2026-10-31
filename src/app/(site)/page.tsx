@@ -35,7 +35,7 @@ export default async function HomePage() {
   const menu = await getMenu()
   const spotlight = await getProductsBySlugs(content.spotlightProducts)
   const shots = await getGalleryShots()
-  const stampPhoto = (await getProductsBySlugs(['naans']))[0]?.photo ?? shots[0]?.media ?? null
+  const stampPhoto = (await getProductsBySlugs(['naan-nature']))[0]?.photo ?? shots[0]?.media ?? null
   const orderCta = site.canOrder
     ? { href: '/commander', label: 'Commander' }
     : { href: '/contact', label: 'Nous trouver' }

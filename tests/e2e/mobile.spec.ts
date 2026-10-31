@@ -23,7 +23,7 @@ test.describe('mobile', () => {
   })
 
   test('aucune page ne déborde horizontalement', async ({ page }) => {
-    for (const path of ['/', '/restaurant', '/galerie', '/contact', '/carte/naan-kebab', '/mentions-legales']) {
+    for (const path of ['/', '/restaurant', '/galerie', '/contact', '/carte/naan-garni', '/mentions-legales']) {
       await page.goto(path)
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
       expect(overflow, path).toBeLessThanOrEqual(0)

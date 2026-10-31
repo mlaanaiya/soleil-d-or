@@ -13,7 +13,11 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   serverExternalPackages: ['sharp', 'postgres', '@electric-sql/pglite'],
   // Fonts read at runtime by the social image; the source photos are only needed to seed the database.
-  outputFileTracingIncludes: { '/opengraph-image': ['./assets/fonts/**/*'] },
+  outputFileTracingIncludes: {
+    '/opengraph-image': ['./assets/fonts/**/*'],
+    // Demo deployments ship their database snapshot with every server route.
+    '/**': ['./snapshot/**/*'],
+  },
   outputFileTracingExcludes: { '**': ['./assets/photos/**/*', './assets/cutouts/**/*', './data/**/*'] },
   async headers() {
     return [

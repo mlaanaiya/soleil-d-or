@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "vercel-build": "npm run db:seed && next build",
+    "vercel-build": "tsx scripts/prepare-deploy.ts && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
@@ -17,6 +17,7 @@
     "test:postgres": "tsx scripts/test-postgres-driver.ts",
     "test:e2e": "playwright test",
     "db:seed": "tsx --conditions=react-server scripts/seed.ts",
+    "db:snapshot": "tsx --conditions=react-server scripts/snapshot.ts",
     "admin:create": "tsx --conditions=react-server scripts/create-admin.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

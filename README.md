@@ -76,6 +76,10 @@ Au premier lancement, la base embarquée `data/pglite` est créée et les photos
 
 Pour un nom de domaine : Vercel → projet → Settings → Domains, puis mettez `SITE_URL` à jour et redéployez.
 
+### Démonstration sans base externe
+
+Avec la variable `PGLITE_SNAPSHOT=snapshot/soleil-d-or.tar.gz`, le build (`npm run vercel-build`) génère un instantané de la base (carte, prix, photos, compte administrateur) livré avec le site, chargé en mémoire au démarrage. Aucune base externe n'est nécessaire ; les modifications faites dans l'administration sont conservées jusqu'au recyclage de l'instance. Pour générer l'instantané en local : `npm run db:snapshot`.
+
 ### Sur un serveur (Docker)
 
 ```bash

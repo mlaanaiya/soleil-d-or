@@ -30,37 +30,37 @@ test.describe('site public', () => {
   test('carte : catégories, recherche et liste rapide', async ({ page }) => {
     await page.goto('/carte')
     for (const name of [
-      'Sandwichs',
-      'Assiettes',
-      'Tacos',
       'Burgers',
-      'Crousty riz',
-      'Bowls',
-      'Accompagnements',
-      'Boissons',
+      'Tacos',
+      'Naans & paninis',
+      'Assiettes',
+      'Bowls & crousty riz',
+      'Barquettes & accompagnements',
+      'Boissons & desserts',
+      'Menu enfant',
     ]) {
       await expect(page.getByRole('heading', { level: 2, name, exact: true })).toBeAttached()
     }
     await page.getByLabel('Rechercher un produit').fill('kébab')
     await expect(page.getByText(/résultat\(s\) pour « kébab »/)).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Burgers', exact: true })).toHaveCount(0)
-    await expect(page.getByRole('heading', { level: 3, name: 'Naan kebab' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 3, name: 'Barquette kebab' })).toBeVisible()
     await page.getByLabel('Rechercher un produit').fill('introuvable')
     await expect(page.getByText('Aucun produit ne correspond.')).toBeVisible()
     await page.getByRole('button', { name: 'Effacer la recherche' }).click()
     await page.getByRole('button', { name: 'Liste rapide' }).click()
     await expect(page.getByRole('button', { name: 'Liste rapide' })).toHaveAttribute('aria-pressed', 'true')
-    await expect(page.getByText('Cette rubrique sera bientôt détaillée.')).toBeVisible()
+    await expect(page.getByText('Menu enfant').first()).toBeVisible()
   })
 
   test('fiche produit et produits voisins', async ({ page }) => {
-    await page.goto('/carte/tacos-poulet')
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tacos poulet')
-    await expect(page.getByText('Prix communiqué au restaurant')).toBeVisible()
+    await page.goto('/carte/tacos-simple')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tacos simple')
+    await expect(page.locator('dl').first()).toContainText('6,00')
     const ld = await page.locator('script[type="application/ld+json"]').first().textContent()
     expect(JSON.parse(ld!)['@type']).toBe('MenuItem')
     await page.getByRole('link', { name: /Suivant/ }).click()
-    await expect(page).not.toHaveURL(/tacos-poulet/)
+    await expect(page).not.toHaveURL(/tacos-simple/)
     await settled(page)
   })
 
@@ -107,7 +107,7 @@ test.describe('référencement et sécurité', () => {
     expect(robots).toContain('Disallow: /admin')
     expect(robots).toContain('http://localhost:3200/sitemap.xml')
     const sitemap = await (await request.get('/sitemap.xml')).text()
-    expect(sitemap).toContain('/carte/double-cheeseburger')
+    expect(sitemap).toContain('/carte/double-steak')
     expect(sitemap).not.toContain('/commander')
     const og = await request.get('/opengraph-image')
     expect(og.headers()['content-type']).toBe('image/png')

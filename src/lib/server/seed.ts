@@ -8,221 +8,239 @@ import { countUsers, upsertUser } from './security'
 import { setSetting } from './settings'
 
 /**
- * Initial catalogue built strictly from the restaurant's own photographs.
- * Names and short descriptions come from the photo titles supplied by the restaurant;
- * prices are intentionally left empty — they must be entered in the administration.
+ * Initial catalogue: the restaurant's real menu and prices, illustrated with its own photographs.
+ * A product without a matching photograph has none (never a look-alike).
  */
 const CATEGORIES = [
-  { slug: 'sandwichs', name: 'Sandwichs', tagline: 'Dans le pain, tout le soleil.' },
-  { slug: 'assiettes', name: 'Assiettes', tagline: 'Le grand format, servi à l’assiette.' },
-  { slug: 'tacos', name: 'Tacos', tagline: 'Grillés, fondants, pliés.' },
   { slug: 'burgers', name: 'Burgers', tagline: 'Haut en couleur.' },
-  { slug: 'crousty-riz', name: 'Crousty riz', tagline: 'Le croustillant sur lit de riz.' },
-  { slug: 'bowls', name: 'Bowls', tagline: 'Tout dans le bol.' },
-  { slug: 'accompagnements', name: 'Accompagnements', tagline: 'À côté, jamais en retrait.' },
-  { slug: 'boissons', name: 'Boissons', tagline: 'Pour accompagner le soleil.' },
+  { slug: 'tacos', name: 'Tacos', tagline: 'Grillés, fondants, pliés.' },
+  { slug: 'naans-paninis', name: 'Naans & paninis', tagline: 'Dans le pain, tout le soleil.' },
+  { slug: 'assiettes', name: 'Assiettes', tagline: 'Le grand format, servi à l’assiette.' },
+  { slug: 'bowls', name: 'Bowls & crousty riz', tagline: 'Tout dans le bol.' },
+  { slug: 'accompagnements', name: 'Barquettes & accompagnements', tagline: 'À côté, jamais en retrait.' },
+  { slug: 'boissons', name: 'Boissons & desserts', tagline: 'Pour accompagner le soleil.' },
+  { slug: 'menu-enfant', name: 'Menu enfant', tagline: 'Pour les petits.' },
 ] as const
 
 type SeedProduct = {
-  file: string
   slug: string
   name: string
   category: (typeof CATEGORIES)[number]['slug']
-  description: string
-  alt: string
+  /** Price rows as [label, euros]. */
+  prices: Array<[string, string]>
+  file?: string
+  alt?: string
+  description?: string
   cutout?: boolean
   featured?: boolean
 }
 
+const trio = (seul: string, frites: string, menu?: string): Array<[string, string]> => [
+  ['Seul', seul],
+  ['+ Frites', frites],
+  ...(menu ? [['Menu', menu] as [string, string]] : []),
+]
+const plate = (file: string | undefined, slug: string, name: string, alt?: string): SeedProduct => ({
+  slug,
+  name,
+  category: 'assiettes',
+  prices: [
+    ['Seul', '11,00'],
+    ['Menu', '12,50'],
+  ],
+  ...(file ? { file, alt, description: alt ? `${alt}.` : undefined } : {}),
+})
+
 const PRODUCTS: SeedProduct[] = [
+  { slug: 'burger-classique', name: 'Burger classique', category: 'burgers', prices: trio('3,00', '7,00', '8,50') },
+  { slug: 'cheeseburger', name: 'Cheeseburger', category: 'burgers', prices: trio('3,50', '7,00', '8,50') },
   {
-    file: 'kebab-francais-au-pain-turc-grille',
-    slug: 'kebab-pain-turc',
-    name: 'Kebab pain turc',
-    category: 'sandwichs',
-    description: 'Kebab à la française dans un pain turc grillé.',
-    alt: 'Kebab français au pain turc grillé',
-    cutout: true,
-    featured: true,
-  },
-  {
-    file: 'sandwich-naan-kebab-gourmand',
-    slug: 'naan-kebab',
-    name: 'Naan kebab',
-    category: 'sandwichs',
-    description: 'Sandwich kebab gourmand dans un pain naan.',
-    alt: 'Sandwich naan kebab gourmand',
-    cutout: true,
-    featured: true,
-  },
-  {
-    file: 'panini-grille-au-poulet-et-fromage',
-    slug: 'panini-poulet-fromage',
-    name: 'Panini poulet fromage',
-    category: 'sandwichs',
-    description: 'Panini grillé au poulet et au fromage.',
-    alt: 'Panini grillé au poulet et fromage',
-    cutout: true,
-  },
-  {
-    file: 'assiette-grillee-frites-et-salade-fraiche',
-    slug: 'assiette-grillee',
-    name: 'Assiette grillée',
-    category: 'assiettes',
-    description: 'Assiette grillée, frites et salade fraîche.',
-    alt: 'Assiette grillée, frites et salade fraîche',
-    featured: true,
-  },
-  {
-    file: 'cordon-bleu-frites-et-salade',
-    slug: 'cordon-bleu',
-    name: 'Cordon bleu',
-    category: 'assiettes',
-    description: 'Cordon bleu, frites et salade.',
-    alt: 'Cordon bleu, frites et salade',
-    featured: true,
-  },
-  {
-    file: 'tenders-croustillants-frites-et-salade',
-    slug: 'tenders',
-    name: 'Tenders',
-    category: 'assiettes',
-    description: 'Tenders croustillants, frites et salade.',
-    alt: 'Tenders croustillants, frites et salade',
-  },
-  {
-    file: 'nuggets-croustillants-frites-et-salade-fraiche',
-    slug: 'nuggets',
-    name: 'Nuggets',
-    category: 'assiettes',
-    description: 'Nuggets croustillants, frites et salade fraîche.',
-    alt: 'Nuggets croustillants, frites et salade fraîche',
-  },
-  {
-    file: 'ailes-de-poulet-frites-et-salade',
-    slug: 'ailes-de-poulet',
-    name: 'Ailes de poulet',
-    category: 'assiettes',
-    description: 'Ailes de poulet, frites et salade.',
-    alt: 'Ailes de poulet, frites et salade',
-  },
-  {
-    file: 'poulet-grille-frites-et-salade',
-    slug: 'poulet-grille',
-    name: 'Poulet grillé',
-    category: 'assiettes',
-    description: 'Poulet grillé, frites et salade.',
-    alt: 'Poulet grillé, frites et salade',
-  },
-  {
-    file: 'steaks-grilles-frites-et-salade',
-    slug: 'steaks-grilles',
-    name: 'Steaks grillés',
-    category: 'assiettes',
-    description: 'Steaks grillés, frites et salade.',
-    alt: 'Steaks grillés, frites et salade',
-  },
-  {
-    file: 'koftas-grilles-frites-et-salade',
-    slug: 'koftas',
-    name: 'Koftas',
-    category: 'assiettes',
-    description: 'Koftas grillés, frites et salade.',
-    alt: 'Koftas grillés, frites et salade',
-  },
-  {
-    file: 'merguez-grillees-frites-et-salade',
-    slug: 'merguez',
-    name: 'Merguez',
-    category: 'assiettes',
-    description: 'Merguez grillées, frites et salade.',
-    alt: 'Merguez grillées, frites et salade',
-  },
-  {
-    file: 'falafels-dores-frites-et-salade-fraiche',
-    slug: 'falafels',
-    name: 'Falafels',
-    category: 'assiettes',
-    description: 'Falafels dorés, frites et salade fraîche.',
-    alt: 'Falafels dorés, frites et salade fraîche',
-  },
-  {
-    file: 'tacos-francais-grille-au-poulet-et-frites',
-    slug: 'tacos-poulet',
-    name: 'Tacos poulet',
-    category: 'tacos',
-    description: 'Tacos à la française grillé, au poulet et aux frites.',
-    alt: 'Tacos français grillé au poulet et frites',
-    cutout: true,
-    featured: true,
-  },
-  {
-    file: 'double-cheeseburger-gourmand-sur-fond-sombre',
-    slug: 'double-cheeseburger',
-    name: 'Double cheeseburger',
+    slug: 'double-steak',
+    name: 'Double steak',
     category: 'burgers',
-    description: 'Double cheeseburger gourmand.',
-    alt: 'Double cheeseburger gourmand sur fond sombre',
+    prices: trio('6,00', '7,00', '8,50'),
+    file: 'double-cheeseburger-gourmand-sur-fond-sombre',
+    alt: 'Burger double steak sur fond sombre',
     cutout: true,
     featured: true,
   },
   {
-    file: 'crousty-riz-au-poulet-croustillant',
-    slug: 'crousty-riz-poulet',
-    name: 'Crousty riz poulet',
-    category: 'crousty-riz',
-    description: 'Riz et poulet croustillant.',
-    alt: 'Crousty riz au poulet croustillant',
+    slug: 'tacos-simple',
+    name: 'Tacos simple',
+    category: 'tacos',
+    prices: trio('6,00', '7,00', '8,50'),
+    file: 'tacos-francais-grille-au-poulet-et-frites',
+    alt: 'Tacos français grillé au poulet et frites',
+    description: 'Tacos à la française, grillé.',
+    cutout: true,
+    featured: true,
+  },
+  { slug: 'tacos-double', name: 'Tacos double', category: 'tacos', prices: trio('8,50', '10,00', '12,00') },
+  {
+    slug: 'naan-garni',
+    name: 'Naan garni',
+    category: 'naans-paninis',
+    prices: trio('5,00', '6,00', '7,50'),
+    file: 'sandwich-naan-kebab-gourmand',
+    alt: 'Naan garni',
     cutout: true,
     featured: true,
   },
   {
-    file: 'bowl-gourmand-de-frites-kebab-et-poulet-croustillant',
-    slug: 'bowl-gourmand',
-    name: 'Bowl gourmand',
-    category: 'bowls',
-    description: 'Bowl de frites, kebab et poulet croustillant.',
-    alt: 'Bowl gourmand de frites, kebab et poulet croustillant',
+    slug: 'panini-garni',
+    name: 'Panini garni',
+    category: 'naans-paninis',
+    prices: trio('5,00', '6,00', '7,50'),
+    file: 'panini-grille-au-poulet-et-fromage',
+    alt: 'Panini grillé garni',
     cutout: true,
+  },
+  { slug: 'panini-3-fromages', name: 'Panini 3 fromages', category: 'naans-paninis', prices: trio('3,00', '4,50') },
+  plate(undefined, 'assiette-kebab', 'Kebab'),
+  plate('koftas-grilles-frites-et-salade', 'assiette-kefta', 'Kefta', 'Kefta grillées, frites et salade'),
+  plate('steaks-grilles-frites-et-salade', 'assiette-steak', 'Steak', 'Steaks grillés, frites et salade'),
+  plate(
+    'nuggets-croustillants-frites-et-salade-fraiche',
+    'assiette-nuggets',
+    'Nuggets',
+    'Nuggets croustillants, frites et salade fraîche',
+  ),
+  plate(
+    'tenders-croustillants-frites-et-salade',
+    'assiette-tenders',
+    'Tenders',
+    'Tenders croustillants, frites et salade',
+  ),
+  plate('ailes-de-poulet-frites-et-salade', 'assiette-wings', 'Wings', 'Ailes de poulet, frites et salade'),
+  plate('poulet-grille-frites-et-salade', 'assiette-chicken', 'Chicken', 'Poulet grillé, frites et salade'),
+  plate(
+    'falafels-dores-frites-et-salade-fraiche',
+    'assiette-falafel',
+    'Falafel',
+    'Falafels dorés, frites et salade fraîche',
+  ),
+  plate('merguez-grillees-frites-et-salade', 'assiette-merguez', 'Merguez', 'Merguez grillées, frites et salade'),
+  {
+    ...plate('cordon-bleu-frites-et-salade', 'cordon-bleu', 'Cordon bleu', 'Cordon bleu, frites et salade'),
     featured: true,
   },
   {
-    file: 'salade-de-thon-fraiche-aux-legumes',
+    slug: 'assiette-royale',
+    name: 'Assiette royale',
+    category: 'assiettes',
+    prices: [['Seul', '15,00']],
+    file: 'assiette-grillee-frites-et-salade-fraiche',
+    alt: 'Assiette royale : grillades, frites et salade fraîche',
+    description: 'Grillades, frites et salade fraîche.',
+    featured: true,
+  },
+  {
     slug: 'salade-thon',
     name: 'Salade de thon',
-    category: 'bowls',
-    description: 'Salade de thon fraîche aux légumes.',
+    category: 'assiettes',
+    prices: [['Seul', '7,50']],
+    file: 'salade-de-thon-fraiche-aux-legumes',
     alt: 'Salade de thon fraîche aux légumes',
+    description: 'Salade de thon fraîche aux légumes.',
     cutout: true,
   },
   {
-    file: 'frites-dorees-en-barquette-noire',
+    slug: 'bowl',
+    name: 'Bowl',
+    category: 'bowls',
+    prices: [
+      ['Seul', '7,00'],
+      ['Menu', '8,50'],
+    ],
+    file: 'bowl-gourmand-de-frites-kebab-et-poulet-croustillant',
+    alt: 'Bowl de frites, kebab et poulet croustillant',
+    description: 'Frites, kebab et poulet croustillant.',
+    cutout: true,
+    featured: true,
+  },
+  {
+    slug: 'crousty-riz',
+    name: 'Crousty riz',
+    category: 'bowls',
+    prices: [
+      ['Seul', '7,00'],
+      ['Menu', '8,50'],
+    ],
+    file: 'crousty-riz-au-poulet-croustillant',
+    alt: 'Crousty riz au poulet croustillant',
+    description: 'Riz et poulet croustillant.',
+    cutout: true,
+    featured: true,
+  },
+  {
+    slug: 'barquette-kebab',
+    name: 'Barquette kebab',
+    category: 'accompagnements',
+    prices: [
+      ['Moyenne', '7,00'],
+      ['Grande', '10,00'],
+    ],
+    file: 'barquette-noire-de-kebab-roti',
+    alt: 'Barquette noire de kebab rôti',
+    cutout: true,
+  },
+  {
+    slug: 'barquette-nuggets',
+    name: 'Barquette nuggets',
+    category: 'accompagnements',
+    prices: [
+      ['5 pièces', '3,00'],
+      ['10 pièces', '6,00'],
+    ],
+  },
+  {
+    slug: 'barquette-tenders',
+    name: 'Barquette tenders',
+    category: 'accompagnements',
+    prices: [
+      ['5 pièces', '7,50'],
+      ['10 pièces', '15,00'],
+    ],
+  },
+  {
+    slug: 'barquette-wings',
+    name: 'Barquette wings',
+    category: 'accompagnements',
+    prices: [
+      ['5 pièces', '3,50'],
+      ['10 pièces', '7,00'],
+    ],
+  },
+  {
     slug: 'frites',
     name: 'Frites',
     category: 'accompagnements',
-    description: 'Frites dorées en barquette.',
+    prices: [
+      ['Moyennes', '1,50'],
+      ['Grandes', '2,50'],
+    ],
+    file: 'frites-dorees-en-barquette-noire',
     alt: 'Frites dorées en barquette noire',
     cutout: true,
   },
   {
-    file: 'naans-grilles-sur-fond-anthracite',
-    slug: 'naans',
-    name: 'Naans grillés',
+    slug: 'naan-nature',
+    name: 'Naan nature',
     category: 'accompagnements',
-    description: 'Pains naan grillés.',
+    prices: [['', '1,00']],
+    file: 'naans-grilles-sur-fond-anthracite',
     alt: 'Naans grillés sur fond anthracite',
     cutout: true,
   },
-  {
-    file: 'barquette-noire-de-kebab-roti',
-    slug: 'barquette-kebab',
-    name: 'Barquette kebab',
-    category: 'accompagnements',
-    description: 'Barquette de viande kebab rôtie.',
-    alt: 'Barquette noire de kebab rôti',
-    cutout: true,
-  },
+  { slug: 'naan-fromage', name: 'Naan fromage', category: 'accompagnements', prices: [['', '2,00']] },
+  { slug: 'soda', name: 'Soda 33 cl', category: 'boissons', prices: [['', '2,00']] },
+  { slug: 'eau', name: 'Eau 50 cl', category: 'boissons', prices: [['', '1,50']] },
+  { slug: 'cafe', name: 'Café', category: 'boissons', prices: [['', '1,50']] },
+  { slug: 'patisserie', name: 'Pâtisserie', category: 'boissons', prices: [['', '2,00']] },
+  { slug: 'menu-enfant', name: 'Menu enfant', category: 'menu-enfant', prices: [['', '7,00']] },
 ]
+
+const cents = (euros: string) => Math.round(Number(euros.replace(',', '.')) * 100)
 
 const META_KEY = '_seeded'
 
@@ -257,28 +275,35 @@ export async function seedIfEmpty(log: (msg: string) => void = () => {}): Promis
 
   for (const [index, p] of PRODUCTS.entries()) {
     if (await one('SELECT 1 FROM products WHERE slug = $1', [p.slug])) continue
-    const photoPath = path.join(photosDir, `${p.file}.jpg`)
-    const cutoutPath = path.join(cutoutsDir, `${p.file}.webp`)
-    const photo = fs.existsSync(photoPath)
-      ? await importImage(fs.readFileSync(photoPath), {
-          kind: 'photo',
-          alt: p.alt,
-          originalName: `${p.file}.jpg`,
-          inGallery: true,
-        })
-      : null
-    const cutout =
-      p.cutout && fs.existsSync(cutoutPath)
-        ? await importImage(fs.readFileSync(cutoutPath), { kind: 'cutout', alt: p.alt, originalName: `${p.file}.webp` })
+    const photoPath = p.file ? path.join(photosDir, `${p.file}.jpg`) : null
+    const cutoutPath = p.file ? path.join(cutoutsDir, `${p.file}.webp`) : null
+    const photo =
+      photoPath && fs.existsSync(photoPath)
+        ? await importImage(fs.readFileSync(photoPath), {
+            kind: 'photo',
+            alt: p.alt ?? p.name,
+            originalName: `${p.file}.jpg`,
+            inGallery: true,
+          })
         : null
+    const cutout =
+      p.cutout && cutoutPath && fs.existsSync(cutoutPath)
+        ? await importImage(fs.readFileSync(cutoutPath), {
+            kind: 'cutout',
+            alt: p.alt ?? p.name,
+            originalName: `${p.file}.webp`,
+          })
+        : null
+    const prices = p.prices.map(([label, euros]) => ({ label, cents: cents(euros) }))
     await query(
-      `INSERT INTO products (slug, category_id, name, description, photo_media_id, cutout_media_id, featured, sort)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (slug) DO NOTHING`,
+      `INSERT INTO products (slug, category_id, name, description, prices, photo_media_id, cutout_media_id, featured, sort)
+       VALUES ($1, $2, $3, $4, $5::text::jsonb, $6, $7, $8, $9) ON CONFLICT (slug) DO NOTHING`,
       [
         p.slug,
         await categoryId(p.category),
         p.name,
-        p.description,
+        p.description ?? '',
+        JSON.stringify(prices),
         photo?.id ?? null,
         cutout?.id ?? null,
         p.featured ?? false,

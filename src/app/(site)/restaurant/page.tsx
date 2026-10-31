@@ -26,9 +26,9 @@ const SWATCHES = [
 
 /** Close-up framing (object-position) chosen per photograph to land on the most appetising detail. */
 const CLOSE_UPS: Array<{ slug: string; focus: string; label: string }> = [
-  { slug: 'double-cheeseburger', focus: '50% 62%', label: 'Le fondant' },
-  { slug: 'crousty-riz-poulet', focus: '50% 40%', label: 'Le croustillant' },
-  { slug: 'naans', focus: '35% 40%', label: 'Le grillé' },
+  { slug: 'double-steak', focus: '50% 62%', label: 'Le fondant' },
+  { slug: 'crousty-riz', focus: '50% 40%', label: 'Le croustillant' },
+  { slug: 'naan-nature', focus: '35% 40%', label: 'Le grillé' },
 ]
 
 export default async function RestaurantPage() {
@@ -37,16 +37,16 @@ export default async function RestaurantPage() {
   const menu = await getMenu()
   const showcase = await getProductsBySlugs([
     ...new Set([
-      'assiette-grillee',
-      'naan-kebab',
+      'assiette-royale',
+      'naan-garni',
       'cordon-bleu',
-      'tacos-poulet',
-      'bowl-gourmand',
+      'tacos-simple',
+      'bowl',
       ...CLOSE_UPS.map((c) => c.slug),
     ]),
   ])
   const photoOf = (slug: string) => showcase.find((p) => p.slug === slug)?.photo ?? null
-  const photos = ['assiette-grillee', 'naan-kebab', 'cordon-bleu', 'tacos-poulet', 'bowl-gourmand']
+  const photos = ['assiette-royale', 'naan-garni', 'cordon-bleu', 'tacos-simple', 'bowl']
     .map(photoOf)
     .filter((m): m is Media => m !== null)
   const closeUps = CLOSE_UPS.map((c) => ({ ...c, media: photoOf(c.slug) })).filter(
